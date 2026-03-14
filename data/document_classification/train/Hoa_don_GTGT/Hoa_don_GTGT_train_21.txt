@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: IYm/6885/HD
+Ký hiệu: AA/25E
+Ngày 15/01/2025
+
+Đơn vị bán hàng: Mai Vũ Công ty Trách nhiệm hữu hạn
+Mã số thuế: 3629493522-7
+Địa chỉ: 282 John Hẻm, JaneThị xã, 321046  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0900319818
+
+Họ tên người mua: Bùi Công ty Hợp danh
+Đơn vị: Vũ Dương Công ty Trách nhiệm hữu hạn
+Mã số thuế: 3185792995-6
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Dịch vụ tư vấn           | Bộ | 4 | 1,798,570 | 7,194,280
+
+Cộng tiền hàng: 7,194,280 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 719,428 VNĐ
+Tổng tiền thanh toán: 7,913,708 VNĐ
+
+Số tiền viết bằng chữ: bảy triệu chín trăm mười ba nghìn bảy trăm tám đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

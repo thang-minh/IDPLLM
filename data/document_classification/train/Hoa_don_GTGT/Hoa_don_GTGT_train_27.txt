@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: KNH/3827/HD
+Ký hiệu: AA/25E
+Ngày 03/07/2025
+
+Đơn vị bán hàng: Lê Hoàng Doanh nghiệp tư nhân
+Mã số thuế: 5379229363-7
+Địa chỉ: 125 Mai Ngõ, Thị xã JaneThành phố, 279416  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0497817257
+
+Họ tên người mua: Mai Mai Công ty Cổ phần
+Đơn vị: Dương Doanh nghiệp tư nhân
+Mã số thuế: 5983195087-6
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | In ấn tài liệu           | Bộ | 321 | 1,279 | 410,559
+
+Cộng tiền hàng: 410,559 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 41,055 VNĐ
+Tổng tiền thanh toán: 451,614 VNĐ
+
+Số tiền viết bằng chữ: bốn trăm năm mươi một nghìn sáu trăm mười bốn đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

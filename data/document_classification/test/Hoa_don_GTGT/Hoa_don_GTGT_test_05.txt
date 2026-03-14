@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: xmf/4650/HD
+Ký hiệu: AA/25E
+Ngày 28/07/2025
+
+Đơn vị bán hàng: Trần và đối tác Công ty Hợp danh
+Mã số thuế: 8662690155-2
+Địa chỉ: 535 Dương Khu, JaneHuyện, 338423  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0248080511
+
+Họ tên người mua: Bùi và Bùi Doanh nghiệp tư nhân
+Đơn vị: Bùi Công ty Hợp danh
+Mã số thuế: 5981948799-8
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Phần mềm quản lý           | Lần | 1 | 19,244,807 | 19,244,807
+
+Cộng tiền hàng: 19,244,807 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 1,924,480 VNĐ
+Tổng tiền thanh toán: 21,169,287 VNĐ
+
+Số tiền viết bằng chữ: hai mươi một triệu một trăm sáu mươi chín nghìn hai trăm tám mươi bảy đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

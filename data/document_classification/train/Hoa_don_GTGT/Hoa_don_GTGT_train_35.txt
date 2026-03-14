@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: zcU/1998/HD
+Ký hiệu: AA/25E
+Ngày 13/09/2025
+
+Đơn vị bán hàng: Hoàng Nguyễn Công ty Hợp danh
+Mã số thuế: 3657950850-3
+Địa chỉ: 891 John Tổ, JohnThị xã, 650346  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0407098805
+
+Họ tên người mua: Dương Công ty Hợp danh
+Đơn vị: Đặng Công ty Cổ phần
+Mã số thuế: 5056655451-2
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Dịch vụ tư vấn           | Cái | 1 | 1,764,786 | 1,764,786
+
+Cộng tiền hàng: 1,764,786 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 176,478 VNĐ
+Tổng tiền thanh toán: 1,941,264 VNĐ
+
+Số tiền viết bằng chữ: một triệu chín trăm bốn mươi một nghìn hai trăm sáu mươi bốn đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

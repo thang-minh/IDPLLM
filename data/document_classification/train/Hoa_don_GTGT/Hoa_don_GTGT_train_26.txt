@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: yHl/9102/HD
+Ký hiệu: AA/25E
+Ngày 19/07/2025
+
+Đơn vị bán hàng: Trần Vũ Công ty TNHH
+Mã số thuế: 4891126978-1
+Địa chỉ: 106 John Làng, JanePhường, 358927  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0439485390
+
+Họ tên người mua: Đặng Lê Công ty Hợp danh
+Đơn vị: Dương Phạm Doanh nghiệp tư nhân
+Mã số thuế: 9389126707-9
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Dịch vụ tư vấn           | Bộ | 4 | 1,005,359 | 4,021,436
+
+Cộng tiền hàng: 4,021,436 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 402,143 VNĐ
+Tổng tiền thanh toán: 4,423,579 VNĐ
+
+Số tiền viết bằng chữ: bốn triệu bốn trăm hai mươi ba nghìn năm trăm bảy mươi chín đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

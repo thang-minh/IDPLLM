@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: mwS/3254/HD
+Ký hiệu: AA/25E
+Ngày 08/01/2025
+
+Đơn vị bán hàng: Dương Phạm Công ty TNHH MTV
+Mã số thuế: 6734473421-1
+Địa chỉ: 122 Đặng Ngõ, JohnQuận, 434186  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0975671396
+
+Họ tên người mua: Đặng và Nguyễn Công ty TNHH
+Đơn vị: Dương và đối tác Doanh nghiệp tư nhân
+Mã số thuế: 9908069134-7
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Dịch vụ tư vấn           | Cái | 3 | 1,161,829 | 3,485,487
+
+Cộng tiền hàng: 3,485,487 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 348,548 VNĐ
+Tổng tiền thanh toán: 3,834,035 VNĐ
+
+Số tiền viết bằng chữ: ba triệu tám trăm ba mươi bốn nghìn ba mươi năm đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

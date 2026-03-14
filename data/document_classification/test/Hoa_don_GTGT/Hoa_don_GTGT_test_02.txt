@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: mBI/1219/HD
+Ký hiệu: AA/25E
+Ngày 07/04/2025
+
+Đơn vị bán hàng: Dương Bùi Công ty Cổ phần
+Mã số thuế: 3293169573-0
+Địa chỉ: 546 John Số, JanePhường, 667863  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0752251597
+
+Họ tên người mua: Trần và đối tác Công ty TNHH
+Đơn vị: Dương và Trần Doanh nghiệp tư nhân
+Mã số thuế: 5686222604-9
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Dịch vụ tư vấn           | Bộ | 1 | 1,328,017 | 1,328,017
+
+Cộng tiền hàng: 1,328,017 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 132,801 VNĐ
+Tổng tiền thanh toán: 1,460,818 VNĐ
+
+Số tiền viết bằng chữ: một triệu bốn trăm sáu mươi nghìn tám trăm mười tám đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

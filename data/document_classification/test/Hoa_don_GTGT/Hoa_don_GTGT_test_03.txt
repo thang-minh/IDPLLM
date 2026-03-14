@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: JHV/0696/HD
+Ký hiệu: AA/25E
+Ngày 18/02/2025
+
+Đơn vị bán hàng: Bùi Công ty Hợp danh
+Mã số thuế: 5065728697-4
+Địa chỉ: 468 Jane Hẻm, Thành phố JohnPhường, 565836  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 075180689
+
+Họ tên người mua: Quang Mai
+Đơn vị: 
+Mã số thuế: 4378755535-
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | In ấn tài liệu           | Cái | 219 | 1,736 | 380,184
+
+Cộng tiền hàng: 380,184 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 38,018 VNĐ
+Tổng tiền thanh toán: 418,202 VNĐ
+
+Số tiền viết bằng chữ: bốn trăm mười tám nghìn hai trăm hai đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

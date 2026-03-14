@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: Wnw/5175/HD
+Ký hiệu: AA/25E
+Ngày 07/04/2025
+
+Đơn vị bán hàng: Mai Công ty TNHH
+Mã số thuế: 8397587188-7
+Địa chỉ: 414 Jane Ngõ, JaneThị xã, 177082  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0257905997
+
+Họ tên người mua: Dương Tập Đoàn
+Đơn vị: Hoàng và Lê Công ty TNHH MTV
+Mã số thuế: 3241975937-5
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | In ấn tài liệu           | Lần | 232 | 584 | 135,488
+
+Cộng tiền hàng: 135,488 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 13,548 VNĐ
+Tổng tiền thanh toán: 149,036 VNĐ
+
+Số tiền viết bằng chữ: một trăm bốn mươi chín nghìn ba mươi sáu đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

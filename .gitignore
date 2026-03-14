@@ -1,0 +1,6 @@
+venv/
+.env
+temp.pdf
+data_images
+bin
+models

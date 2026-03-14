@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: HaI/3188/HD
+Ký hiệu: AA/25E
+Ngày 30/03/2025
+
+Đơn vị bán hàng: Bùi và Hoàng Doanh nghiệp tư nhân
+Mã số thuế: 6483778676-7
+Địa chỉ: 2 Jane Ngõ, JohnThị xã, 998596  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0559616128
+
+Họ tên người mua: Đặng và Dương Công ty Trách nhiệm hữu hạn
+Đơn vị: Bùi Công ty TNHH MTV
+Mã số thuế: 2144400029-9
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Dịch vụ tư vấn           | Lần | 4 | 510,966 | 2,043,864
+
+Cộng tiền hàng: 2,043,864 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 204,386 VNĐ
+Tổng tiền thanh toán: 2,248,250 VNĐ
+
+Số tiền viết bằng chữ: hai triệu hai trăm bốn mươi tám nghìn hai trăm năm mươi đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

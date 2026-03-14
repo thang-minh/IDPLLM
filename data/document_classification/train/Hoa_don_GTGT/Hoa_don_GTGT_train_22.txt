@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: MrQ/1376/HD
+Ký hiệu: AA/25E
+Ngày 24/06/2025
+
+Đơn vị bán hàng: Nguyễn và đối tác Công ty TNHH MTV
+Mã số thuế: 2215051153-5
+Địa chỉ: 54 John Hẻm, JaneQuận, 768122  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0380781953
+
+Họ tên người mua: Mai Trần Công ty Cổ phần
+Đơn vị: Nguyễn và Bùi Công ty Cổ phần
+Mã số thuế: 2032839444-1
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Dịch vụ tư vấn           | Lần | 1 | 895,092 | 895,092
+
+Cộng tiền hàng: 895,092 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 89,509 VNĐ
+Tổng tiền thanh toán: 984,601 VNĐ
+
+Số tiền viết bằng chữ: chín trăm tám mươi bốn nghìn sáu trăm một đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

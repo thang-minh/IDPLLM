@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: sEu/9633/HD
+Ký hiệu: AA/25E
+Ngày 20/08/2025
+
+Đơn vị bán hàng: Nguyễn và đối tác Công ty Hợp danh
+Mã số thuế: 7631971950-4
+Địa chỉ: 68 John Ngõ, JohnXã, 519727  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 041262912
+
+Họ tên người mua: Phạm Trần Công ty TNHH
+Đơn vị: Đặng và đối tác Doanh nghiệp tư nhân
+Mã số thuế: 7600817299-2
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | In ấn tài liệu           | Tháng | 276 | 576 | 158,976
+
+Cộng tiền hàng: 158,976 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 15,897 VNĐ
+Tổng tiền thanh toán: 174,873 VNĐ
+
+Số tiền viết bằng chữ: một trăm bảy mươi bốn nghìn tám trăm bảy mươi ba đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

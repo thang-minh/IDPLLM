@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: vgc/6127/HD
+Ký hiệu: AA/25E
+Ngày 24/06/2025
+
+Đơn vị bán hàng: Đặng Tập Đoàn
+Mã số thuế: 7230615290-3
+Địa chỉ: 628 Phạm Hẻm, Thành phố JohnThành phố, 775011  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 08049358
+
+Họ tên người mua: Nguyễn Công ty Cổ phần
+Đơn vị: Hoàng và đối tác Tập Đoàn
+Mã số thuế: 1866673997-5
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Phần mềm quản lý           | Cái | 1 | 28,135,846 | 28,135,846
+
+Cộng tiền hàng: 28,135,846 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 2,813,584 VNĐ
+Tổng tiền thanh toán: 30,949,430 VNĐ
+
+Số tiền viết bằng chữ: ba mươi triệu chín trăm bốn mươi chín nghìn bốn trăm ba mươi đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

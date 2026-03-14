@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: skl/8362/HD
+Ký hiệu: AA/25E
+Ngày 11/06/2025
+
+Đơn vị bán hàng: Bùi Công ty TNHH MTV
+Mã số thuế: 3934814395-4
+Địa chỉ: 54 Vũ Khu, Huyện JanePhường, 741526  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0806225793
+
+Họ tên người mua: Dương Hoàng Công ty Hợp danh
+Đơn vị: Nguyễn Trần Doanh nghiệp tư nhân
+Mã số thuế: 4230250501-4
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Thiết bị văn phòng           | Bộ | 1 | 2,974,004 | 2,974,004
+
+Cộng tiền hàng: 2,974,004 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 297,400 VNĐ
+Tổng tiền thanh toán: 3,271,404 VNĐ
+
+Số tiền viết bằng chữ: ba triệu hai trăm bảy mươi một nghìn bốn trăm bốn đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

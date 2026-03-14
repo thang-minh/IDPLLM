@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: AUh/1283/HD
+Ký hiệu: AA/25E
+Ngày 25/09/2025
+
+Đơn vị bán hàng: Dương và Dương Doanh nghiệp tư nhân
+Mã số thuế: 7410779527-2
+Địa chỉ: 8 John Đường, JohnThành phố, 184720  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0558024293
+
+Họ tên người mua: Trần và đối tác Công ty Hợp danh
+Đơn vị: Dương và đối tác Doanh nghiệp tư nhân
+Mã số thuế: 6977537078-0
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Phần mềm quản lý           | Cái | 1 | 15,410,176 | 15,410,176
+
+Cộng tiền hàng: 15,410,176 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 1,541,017 VNĐ
+Tổng tiền thanh toán: 16,951,193 VNĐ
+
+Số tiền viết bằng chữ: mười sáu triệu chín trăm năm mươi một nghìn một trăm chín mươi ba đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

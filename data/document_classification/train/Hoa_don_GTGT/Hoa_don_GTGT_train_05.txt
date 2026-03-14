@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: Ydt/2834/HD
+Ký hiệu: AA/25E
+Ngày 29/03/2025
+
+Đơn vị bán hàng: Dương và đối tác Công ty TNHH MTV
+Mã số thuế: 2665318084-4
+Địa chỉ: 7 John Làng, JohnThị xã, 408088  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0605078446
+
+Họ tên người mua: Bùi Doanh nghiệp tư nhân
+Đơn vị: Phạm Bùi Công ty Cổ phần
+Mã số thuế: 6766172220-1
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | In ấn tài liệu           | Lần | 276 | 1,586 | 437,736
+
+Cộng tiền hàng: 437,736 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 43,773 VNĐ
+Tổng tiền thanh toán: 481,509 VNĐ
+
+Số tiền viết bằng chữ: bốn trăm tám mươi một nghìn năm trăm chín đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

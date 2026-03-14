@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: qJG/4630/HD
+Ký hiệu: AA/25E
+Ngày 12/03/2025
+
+Đơn vị bán hàng: Đặng và Nguyễn Doanh nghiệp tư nhân
+Mã số thuế: 4436369846-3
+Địa chỉ: 04 Vũ Dãy, Thị xã JohnXã, 881745  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0526408142
+
+Họ tên người mua: Dương và đối tác Công ty Trách nhiệm hữu hạn
+Đơn vị: Dương và đối tác Doanh nghiệp tư nhân
+Mã số thuế: 5087674627-1
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | In ấn tài liệu           | Tháng | 233 | 1,076 | 250,708
+
+Cộng tiền hàng: 250,708 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 25,070 VNĐ
+Tổng tiền thanh toán: 275,778 VNĐ
+
+Số tiền viết bằng chữ: hai trăm bảy mươi năm nghìn bảy trăm bảy mươi tám đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

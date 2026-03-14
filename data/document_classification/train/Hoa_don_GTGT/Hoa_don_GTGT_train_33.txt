@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: eLN/1122/HD
+Ký hiệu: AA/25E
+Ngày 15/07/2025
+
+Đơn vị bán hàng: Vũ và Vũ Doanh nghiệp tư nhân
+Mã số thuế: 8906218090-4
+Địa chỉ: 79 Jane Số, Thành phố JohnXã, 980669  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0388028575
+
+Họ tên người mua: Kim Tấn Dương
+Đơn vị: 
+Mã số thuế: 9609390658-
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | In ấn tài liệu           | Bộ | 154 | 1,385 | 213,290
+
+Cộng tiền hàng: 213,290 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 21,329 VNĐ
+Tổng tiền thanh toán: 234,619 VNĐ
+
+Số tiền viết bằng chữ: hai trăm ba mươi bốn nghìn sáu trăm mười chín đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

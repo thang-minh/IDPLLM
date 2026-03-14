@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: DpJ/3082/HD
+Ký hiệu: AA/25E
+Ngày 25/01/2025
+
+Đơn vị bán hàng: Trần và đối tác Công ty Trách nhiệm hữu hạn
+Mã số thuế: 9296771653-4
+Địa chỉ: 927 Hoàng Hẻm, JaneQuận, 282557  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0158406321
+
+Họ tên người mua: Lê và Hoàng Công ty Cổ phần
+Đơn vị: Trần và Bùi Công ty Cổ phần
+Mã số thuế: 3057409221-3
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Thiết bị văn phòng           | Cái | 2 | 4,670,108 | 9,340,216
+
+Cộng tiền hàng: 9,340,216 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 934,021 VNĐ
+Tổng tiền thanh toán: 10,274,237 VNĐ
+
+Số tiền viết bằng chữ: mười triệu hai trăm bảy mươi bốn nghìn hai trăm ba mươi bảy đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)

@@ -1,0 +1,27 @@
+HÓA ĐƠN GIÁ TRỊ GIA TĂNG
+Số: mUg/7071/HD
+Ký hiệu: AA/25E
+Ngày 07/09/2025
+
+Đơn vị bán hàng: Dương và đối tác Công ty TNHH MTV
+Mã số thuế: 9029951775-4
+Địa chỉ: 3 Jane Số, JohnQuận, 407091  # <-- Sử dụng biến đã tạo ở trên
+Điện thoại: 0447769601
+
+Họ tên người mua: Lê và Phạm Công ty Trách nhiệm hữu hạn
+Đơn vị: Dương Tập Đoàn
+Mã số thuế: 6577529549-5
+
+STT | Tên hàng hóa, dịch vụ | ĐVT | Số lượng | Đơn giá | Thành tiền
+----|-----------------------|-----|----------|---------|------------
+1   | Phần mềm quản lý           | Tháng | 1 | 14,445,474 | 14,445,474
+
+Cộng tiền hàng: 14,445,474 VNĐ
+Thuế suất GTGT: 10%
+Tiền thuế GTGT: 1,444,547 VNĐ
+Tổng tiền thanh toán: 15,890,021 VNĐ
+
+Số tiền viết bằng chữ: mười lăm triệu tám trăm chín mươi nghìn hai mươi một đồng đồng.
+
+Người mua hàng           Người bán hàng
+(Ký, ghi rõ họ tên)         (Ký, đóng dấu)
