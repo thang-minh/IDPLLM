@@ -442,207 +442,656 @@
 #         st.info("Vui lòng tải lên PDF để bắt đầu.")
 
 
+# import streamlit as st
+# import tempfile
+# import os
+# import asyncio
+# from PIL import Image
+
+# # Import logic
+# from logic.common_processing import (
+#     convert_pdf_to_txt,
+#     convert_pdf_to_images,
+#     extract_text_from_list_of_images,
+#     preprocess_text_nlp,
+#     process_document_for_main_smartdoc,
+#     generate_groq_response
+# )
+# from ui_utils.fun_meme import display_random_meme
+
+# # Import Model Local
+# from logic.document_classifier_logic import classify_document_phobert
+
+# def show_main_smartdoc_ui(api_key, poppler_path_env):
+#     st.markdown("<h1 style='text-align: center;'>Trí tuệ Tài liệu (Xử lý PDF)</h1>", unsafe_allow_html=True)
+#     st.markdown("<p style='text-align: center;'>Quy trình Hybrid: <b>Phân loại nhanh (Local)</b> &rarr; <b>Phân tích sâu (Cloud API)</b>.</p>", unsafe_allow_html=True)
+#     st.markdown("---")
+
+#     # --- KHỞI TẠO SESSION STATE ---
+#     # Thêm 2 cờ trạng thái mới: msd_local_done (xong bước 1) và msd_api_done (xong bước 2)
+#     defaults = {
+#         'msd_full_text': "", 
+#         'msd_preview_images': [], 
+#         'msd_ai_results': None, 
+#         'msd_last_filename': None, 
+#         'msd_phobert_result': None,
+#         'msd_local_done': False, # Đã chạy xong model local chưa
+#         'msd_api_done': False    # Đã chạy xong API chưa
+#     }
+#     for key, val in defaults.items():
+#         if key not in st.session_state:
+#             st.session_state[key] = val
+
+#     uploaded_file = st.file_uploader("Tải lên file PDF:", type="pdf", key="msd_pdf_uploader")
+
+#     if uploaded_file:
+#         # Reset trạng thái khi có file mới hoàn toàn
+#         if uploaded_file.name != st.session_state.msd_last_filename:
+#             for key in defaults.keys():
+#                 st.session_state[key] = defaults[key]
+#             # Giữ lại filename mới
+#             st.session_state.msd_last_filename = uploaded_file.name
+
+#         file_data = uploaded_file.read()
+
+#         # --- 1. PREVIEW PDF (Tự động chạy khi up file) ---
+#         if poppler_path_env and not st.session_state.msd_preview_images:
+#             with st.spinner("Đang tạo bản xem trước..."):
+#                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+#                     tmp.write(file_data)
+#                     temp_path = tmp.name
+#                 try:
+#                     st.session_state.msd_preview_images = convert_pdf_to_images(temp_path, 1, 3, poppler_path_env)
+#                 except Exception: pass
+#                 finally:
+#                     if os.path.exists(temp_path): os.unlink(temp_path)
+
+#         if st.session_state.msd_preview_images:
+#             with st.expander("👁️ Xem trước tài liệu (Trang đầu)", expanded=False):
+#                 cols = st.columns(len(st.session_state.msd_preview_images))
+#                 for i, img in enumerate(st.session_state.msd_preview_images):
+#                     cols[i].image(img, f"Trang {i+1}", use_column_width=True)
+        
+#         st.markdown("---")
+
+#         # =========================================================
+#         # GIAI ĐOẠN 1: CHẠY LOCAL (Trích xuất Text + Model PhoBERT)
+#         # =========================================================
+        
+#         # Nút bấm chạy Giai đoạn 1 (Chỉ hiện khi chưa chạy xong)
+#         if not st.session_state.msd_local_done:
+#             if st.button("🚀 Bước 1: Trích xuất & Phân loại nhanh (Local)", type="primary", use_container_width=True):
+                
+#                 with st.status("Đang xử lý nội bộ...", expanded=True) as status:
+#                     # A. Trích xuất Text
+#                     st.write("📄 Đang đọc văn bản từ PDF...")
+#                     try:
+#                         st.session_state.msd_full_text = convert_pdf_to_txt(file_data)
+#                         # Fallback OCR nếu file scan
+#                         if len(st.session_state.msd_full_text) < 100 and st.session_state.msd_preview_images:
+#                             st.write("🔍 Text gốc ít, đang chạy OCR bổ sung...")
+#                             ocr_text = extract_text_from_list_of_images(st.session_state.msd_preview_images, 'vie', True)
+#                             st.session_state.msd_full_text += "\n" + ocr_text
+#                     except Exception as e:
+#                         st.error(f"Lỗi đọc file: {e}")
+#                         st.stop()
+
+#                     if not st.session_state.msd_full_text.strip():
+#                         st.error("Không tìm thấy văn bản nào.")
+#                         st.stop()
+
+#                     # B. Chạy Model Local
+#                     st.write("⚡ Đang chạy Model PhoBERT...")
+#                     try:
+#                         st.session_state.msd_phobert_result = classify_document_phobert(st.session_state.msd_full_text)
+#                     except Exception as e:
+#                         st.session_state.msd_phobert_result = f"Lỗi: {e}"
+                    
+#                     # Đánh dấu đã xong bước 1
+#                     st.session_state.msd_local_done = True
+#                     status.update(label="Đã phân loại xong!", state="complete", expanded=False)
+                
+#                 st.rerun()
+
+#         # HIỂN THỊ KẾT QUẢ GIAI ĐOẠN 1
+#         if st.session_state.msd_local_done:
+#             with st.container(border=True):
+#                 col_local_1, col_local_2 = st.columns([2, 1])
+#                 with col_local_1:
+#                     st.subheader("🏷️ Kết quả Phân loại (Local)")
+#                     res_local = st.session_state.msd_phobert_result
+                    
+#                     if "Lỗi" in str(res_local):
+#                         st.error(res_local)
+#                     else:
+#                         st.success(f"Dự đoán: **{res_local}**")
+#                         st.caption("Mô hình PhoBERT tự huấn luyện (Chạy offline)")
+                
+#                 with col_local_2:
+#                     # Xem nhanh văn bản trích xuất
+#                     with st.popover("Xem văn bản thô"):
+#                         st.text_area("Nội dung:", st.session_state.msd_full_text, height=300)
+
+#         # =========================================================
+#         # GIAI ĐOẠN 2: CHẠY API (Tùy chọn)
+#         # =========================================================
+        
+#         # Chỉ hiện nút API khi đã xong Local
+#         if st.session_state.msd_local_done:
+#             st.markdown("---")
+            
+#             # Nếu chưa chạy API thì hiện nút
+#             if not st.session_state.msd_api_done:
+#                 st.info("Bạn muốn phân tích chi tiết? (Tóm tắt, Trích xuất thông tin, Dịch thuật...)")
+#                 if st.button("🧠 Bước 2: Phân tích sâu với AI (Call API)", type="secondary", use_container_width=True):
+#                     if not api_key:
+#                         st.error("Thiếu API Key!")
+#                     else:
+#                         with st.spinner("Đang gửi dữ liệu lên đám mây..."):
+#                             try:
+#                                 e, r, s, c = asyncio.run(process_document_for_main_smartdoc(api_key, st.session_state.msd_full_text))
+#                                 st.session_state.msd_ai_results = {
+#                                     "entities": e, 
+#                                     "relationships": r, 
+#                                     "summary": s, 
+#                                     "classification": c 
+#                                 }
+#                                 st.session_state.msd_api_done = True # Đánh dấu xong bước 2
+#                                 st.rerun()
+#                             except Exception as e:
+#                                 st.error(f"Lỗi API: {e}")
+
+#             # HIỂN THỊ KẾT QUẢ GIAI ĐOẠN 2 (Nếu đã chạy xong)
+#             if st.session_state.msd_api_done:
+#                 st.success("✅ Đã hoàn tất phân tích sâu!")
+                
+#                 # So sánh nhẹ
+#                 api_class = st.session_state.msd_ai_results.get("classification", "N/A")
+#                 st.caption(f"🤖 AI API cũng nhận định đây là: **{api_class}**")
+
+#                 # Tabs hiển thị chi tiết
+#                 tab1, tab2, tab3 = st.tabs(["📝 Tóm tắt & TT", "💬 Hỏi đáp", "🌍 Dịch thuật"])
+
+#                 with tab1:
+#                     res = st.session_state.msd_ai_results or {}
+#                     st.subheader("Tóm tắt nội dung:")
+#                     st.markdown(f"<div style='background: #f8f8f8; padding:15px; border-radius:10px;'>{res.get('summary', 'Chưa có dữ liệu')}</div>", unsafe_allow_html=True)
+                    
+#                     c1, c2 = st.columns(2)
+#                     with c1:
+#                         st.markdown("**Thực thể:**")
+#                         st.info(res.get('entities', 'N/A'))
+#                     with c2:
+#                         st.markdown("**Quan hệ:**")
+#                         st.info(res.get('relationships', 'N/A'))
+
+#                 with tab2:
+#                     st.subheader("Chat với tài liệu")
+#                     user_q = st.text_input("Đặt câu hỏi:", key="chat_q")
+#                     if user_q and st.button("Gửi"):
+#                          with st.spinner("Thinking..."):
+#                             ans = asyncio.run(generate_groq_response(api_key, f"Context:\n{st.session_state.msd_full_text[:10000]}\n\nQuestion: {user_q}"))
+#                             st.write(ans)
+
+#                 with tab3:
+#                     st.subheader("Dịch thuật")
+#                     lang = st.selectbox("Ngôn ngữ:", ["English", "Chinese", "Japanese"])
+#                     if st.button("Dịch ngay"):
+#                          with st.spinner("Translating..."):
+#                             trans = asyncio.run(generate_groq_response(api_key, f"Translate to {lang}:\n{st.session_state.msd_full_text[:3000]}"))
+#                             st.text_area("Kết quả:", trans)
+                
+#                 st.markdown("---")
+#                 display_random_meme()
+
+#     else:
+#         st.info("👈 Vui lòng tải lên file PDF để bắt đầu.")
+
+# ui/main_smartdoc_ui.py
+
 import streamlit as st
 import tempfile
 import os
 import asyncio
-from PIL import Image
 
-# Import logic
 from logic.common_processing import (
     convert_pdf_to_txt,
     convert_pdf_to_images,
     extract_text_from_list_of_images,
-    preprocess_text_nlp,
     process_document_for_main_smartdoc,
     generate_groq_response
 )
+
+from logic.document_classifier_logic import classify_document_phobert
 from ui_utils.fun_meme import display_random_meme
 
-# Import Model Local
-from logic.document_classifier_logic import classify_document_phobert
 
 def show_main_smartdoc_ui(api_key, poppler_path_env):
-    st.markdown("<h1 style='text-align: center;'>Trí tuệ Tài liệu (Xử lý PDF)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Quy trình Hybrid: <b>Phân loại nhanh (Local)</b> &rarr; <b>Phân tích sâu (Cloud API)</b>.</p>", unsafe_allow_html=True)
+    st.markdown(
+        "<h1 style='text-align: center;'>SmartDoc AI - Phân loại & Phân tích tài liệu</h1>",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <p style='text-align: center;'>
+        Quy trình xử lý: <b>PDF/Text</b> → <b>Trích xuất văn bản/OCR</b> → 
+        <b>PhoBERT phân loại local</b> → <b>LLM phân tích sâu</b>
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.markdown("---")
 
-    # --- KHỞI TẠO SESSION STATE ---
-    # Thêm 2 cờ trạng thái mới: msd_local_done (xong bước 1) và msd_api_done (xong bước 2)
     defaults = {
-        'msd_full_text': "", 
-        'msd_preview_images': [], 
-        'msd_ai_results': None, 
-        'msd_last_filename': None, 
-        'msd_phobert_result': None,
-        'msd_local_done': False, # Đã chạy xong model local chưa
-        'msd_api_done': False    # Đã chạy xong API chưa
+        "msd_input_mode": "Upload PDF",
+        "msd_full_text": "",
+        "msd_preview_images": [],
+        "msd_phobert_result": None,
+        "msd_ai_results": None,
+        "msd_last_filename": None,
+        "msd_local_done": False,
+        "msd_llm_done": False,
     }
+
     for key, val in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = val
 
-    uploaded_file = st.file_uploader("Tải lên file PDF:", type="pdf", key="msd_pdf_uploader")
+    # ==========================
+    # 1. CHỌN NGUỒN ĐẦU VÀO
+    # ==========================
 
-    if uploaded_file:
-        # Reset trạng thái khi có file mới hoàn toàn
+    st.subheader("1. Chọn nguồn tài liệu")
+
+    input_mode = st.radio(
+        "Nguồn đầu vào:",
+        ["Upload PDF", "Nhập văn bản trực tiếp"],
+        horizontal=True,
+        key="msd_input_mode_radio"
+    )
+
+    if input_mode != st.session_state.msd_input_mode:
+        for key, val in defaults.items():
+            st.session_state[key] = val
+        st.session_state.msd_input_mode = input_mode
+        st.rerun()
+
+    uploaded_file = None
+    manual_text = ""
+
+    if input_mode == "Upload PDF":
+        uploaded_file = st.file_uploader(
+            "Tải lên file PDF:",
+            type="pdf",
+            key="msd_pdf_uploader"
+        )
+
+    else:
+        manual_text = st.text_area(
+            "Nhập hoặc dán nội dung văn bản cần phân loại:",
+            height=300,
+            placeholder=(
+                "Ví dụ:\n"
+                "HÓA ĐƠN GIÁ TRỊ GIA TĂNG...\n"
+                "hoặc\n"
+                "HỢP ĐỒNG LAO ĐỘNG...\n"
+                "hoặc\n"
+                "BIÊN BẢN HỌP..."
+            )
+        )
+
+    st.markdown("---")
+
+    # ==========================
+    # 2. XỬ LÝ PDF PREVIEW
+    # ==========================
+
+    file_data = None
+
+    if input_mode == "Upload PDF" and uploaded_file is not None:
         if uploaded_file.name != st.session_state.msd_last_filename:
-            for key in defaults.keys():
-                st.session_state[key] = defaults[key]
-            # Giữ lại filename mới
+            for key, val in defaults.items():
+                st.session_state[key] = val
+            st.session_state.msd_input_mode = input_mode
             st.session_state.msd_last_filename = uploaded_file.name
 
         file_data = uploaded_file.read()
 
-        # --- 1. PREVIEW PDF (Tự động chạy khi up file) ---
         if poppler_path_env and not st.session_state.msd_preview_images:
-            with st.spinner("Đang tạo bản xem trước..."):
+            with st.spinner("Đang tạo ảnh xem trước PDF..."):
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                     tmp.write(file_data)
                     temp_path = tmp.name
+
                 try:
-                    st.session_state.msd_preview_images = convert_pdf_to_images(temp_path, 1, 3, poppler_path_env)
-                except Exception: pass
+                    st.session_state.msd_preview_images = convert_pdf_to_images(
+                        temp_path,
+                        1,
+                        3,
+                        poppler_path_env
+                    )
+                except Exception as e:
+                    st.warning(f"Không tạo được preview PDF: {e}")
                 finally:
-                    if os.path.exists(temp_path): os.unlink(temp_path)
+                    if os.path.exists(temp_path):
+                        os.unlink(temp_path)
 
         if st.session_state.msd_preview_images:
-            with st.expander("👁️ Xem trước tài liệu (Trang đầu)", expanded=False):
+            with st.expander("Xem trước tài liệu PDF", expanded=False):
                 cols = st.columns(len(st.session_state.msd_preview_images))
                 for i, img in enumerate(st.session_state.msd_preview_images):
-                    cols[i].image(img, f"Trang {i+1}", use_column_width=True)
-        
-        st.markdown("---")
+                    cols[i].image(
+                        img,
+                        caption=f"Trang {i + 1}",
+                        use_container_width=True
+                    )
 
-        # =========================================================
-        # GIAI ĐOẠN 1: CHẠY LOCAL (Trích xuất Text + Model PhoBERT)
-        # =========================================================
-        
-        # Nút bấm chạy Giai đoạn 1 (Chỉ hiện khi chưa chạy xong)
-        if not st.session_state.msd_local_done:
-            if st.button("🚀 Bước 1: Trích xuất & Phân loại nhanh (Local)", type="primary", use_container_width=True):
-                
-                with st.status("Đang xử lý nội bộ...", expanded=True) as status:
-                    # A. Trích xuất Text
-                    st.write("📄 Đang đọc văn bản từ PDF...")
-                    try:
-                        st.session_state.msd_full_text = convert_pdf_to_txt(file_data)
-                        # Fallback OCR nếu file scan
-                        if len(st.session_state.msd_full_text) < 100 and st.session_state.msd_preview_images:
-                            st.write("🔍 Text gốc ít, đang chạy OCR bổ sung...")
-                            ocr_text = extract_text_from_list_of_images(st.session_state.msd_preview_images, 'vie', True)
-                            st.session_state.msd_full_text += "\n" + ocr_text
-                    except Exception as e:
-                        st.error(f"Lỗi đọc file: {e}")
+    # ==========================
+    # 3. BƯỚC 1: LẤY TEXT + PHÂN LOẠI LOCAL
+    # ==========================
+
+    st.subheader("2. Trích xuất văn bản và phân loại local")
+
+    can_run_local = False
+
+    if input_mode == "Upload PDF" and uploaded_file is not None:
+        can_run_local = True
+
+    if input_mode == "Nhập văn bản trực tiếp" and manual_text.strip():
+        can_run_local = True
+
+    if not can_run_local:
+        st.info("Vui lòng upload PDF hoặc nhập văn bản để bắt đầu.")
+        return
+
+    if not st.session_state.msd_local_done:
+        if st.button(
+            "Chạy phân loại bằng PhoBERT",
+            type="primary",
+            use_container_width=True
+        ):
+            with st.status("Đang xử lý tài liệu...", expanded=True) as status:
+                try:
+                    if input_mode == "Upload PDF":
+                        st.write("Đang trích xuất text từ PDF...")
+
+                        extracted_text = convert_pdf_to_txt(file_data)
+
+                        if len(extracted_text.strip()) < 100 and st.session_state.msd_preview_images:
+                            st.write("Text PDF ít, đang chạy OCR bổ sung...")
+                            ocr_text = extract_text_from_list_of_images(
+                                st.session_state.msd_preview_images,
+                                "vie",
+                                True
+                            )
+                            extracted_text = extracted_text + "\n" + ocr_text
+
+                        st.session_state.msd_full_text = extracted_text.strip()
+
+                    else:
+                        st.write("Đang lấy văn bản người dùng nhập...")
+                        st.session_state.msd_full_text = manual_text.strip()
+
+                    if not st.session_state.msd_full_text:
+                        st.error("Không tìm thấy nội dung văn bản.")
                         st.stop()
 
-                    if not st.session_state.msd_full_text.strip():
-                        st.error("Không tìm thấy văn bản nào.")
-                        st.stop()
+                    st.write("Đang chạy mô hình PhoBERT local...")
+                    result = classify_document_phobert(st.session_state.msd_full_text)
 
-                    # B. Chạy Model Local
-                    st.write("⚡ Đang chạy Model PhoBERT...")
-                    try:
-                        st.session_state.msd_phobert_result = classify_document_phobert(st.session_state.msd_full_text)
-                    except Exception as e:
-                        st.session_state.msd_phobert_result = f"Lỗi: {e}"
-                    
-                    # Đánh dấu đã xong bước 1
+                    st.session_state.msd_phobert_result = result
                     st.session_state.msd_local_done = True
-                    status.update(label="Đã phân loại xong!", state="complete", expanded=False)
-                
-                st.rerun()
 
-        # HIỂN THỊ KẾT QUẢ GIAI ĐOẠN 1
-        if st.session_state.msd_local_done:
-            with st.container(border=True):
-                col_local_1, col_local_2 = st.columns([2, 1])
-                with col_local_1:
-                    st.subheader("🏷️ Kết quả Phân loại (Local)")
-                    res_local = st.session_state.msd_phobert_result
-                    
-                    if "Lỗi" in str(res_local):
-                        st.error(res_local)
+                    status.update(
+                        label="Hoàn tất phân loại local.",
+                        state="complete",
+                        expanded=False
+                    )
+
+                except Exception as e:
+                    st.error(f"Lỗi xử lý local: {e}")
+                    st.stop()
+
+            st.rerun()
+
+    # ==========================
+    # 4. HIỂN THỊ KẾT QUẢ PHOBERT
+    # ==========================
+
+    if st.session_state.msd_local_done:
+        result = st.session_state.msd_phobert_result
+
+        with st.container(border=True):
+            st.subheader("Kết quả phân loại bằng PhoBERT")
+
+            if not result or "error" in result:
+                st.error(result.get("error", "Có lỗi khi phân loại."))
+            else:
+                col1, col2 = st.columns([2, 1])
+
+                with col1:
+                    st.success(f"Loại tài liệu dự đoán: **{result['display_label']}**")
+                    st.caption("Mô hình sử dụng: PhoBERT fine-tune, chạy local/offline.")
+
+                with col2:
+                    confidence_percent = result["confidence"] * 100
+                    st.metric("Độ tin cậy", f"{confidence_percent:.2f}%")
+
+                st.markdown("**Xác suất từng lớp:**")
+
+                probabilities = result.get("probabilities", {})
+
+                for label, prob in probabilities.items():
+                    st.progress(
+                        prob,
+                        text=f"{label.replace('_', ' ')}: {prob * 100:.2f}%"
+                    )
+
+        with st.expander("Xem nội dung văn bản đã trích xuất / đã nhập", expanded=False):
+            st.text_area(
+                "Nội dung văn bản:",
+                st.session_state.msd_full_text,
+                height=350
+            )
+
+    # ==========================
+    # 5. BƯỚC 2: LLM PHÂN TÍCH SÂU
+    # ==========================
+
+    if st.session_state.msd_local_done:
+        st.markdown("---")
+        st.subheader("3. Phân tích sâu bằng LLM")
+
+        st.info(
+            "Bước này dùng LLM để đọc nội dung văn bản, tóm tắt, trích xuất thông tin "
+            "và kiểm tra lại loại tài liệu. PhoBERT dùng để phân loại nhanh local, "
+            "LLM dùng để giải thích và phân tích sâu."
+        )
+
+        if not st.session_state.msd_llm_done:
+            if st.button(
+                "Chạy phân tích sâu bằng LLM",
+                type="secondary",
+                use_container_width=True
+            ):
+                if not api_key:
+                    st.error("Thiếu API key để gọi LLM.")
+                else:
+                    with st.spinner("Đang gọi LLM phân tích tài liệu..."):
+                        try:
+                            prompt = build_llm_document_analysis_prompt(
+                                text=st.session_state.msd_full_text,
+                                phobert_result=st.session_state.msd_phobert_result
+                            )
+
+                            llm_response = asyncio.run(
+                                generate_groq_response(api_key, prompt)
+                            )
+
+                            st.session_state.msd_ai_results = {
+                                "analysis": llm_response
+                            }
+
+                            st.session_state.msd_llm_done = True
+                            st.rerun()
+
+                        except Exception as e:
+                            st.error(f"Lỗi khi gọi LLM: {e}")
+
+        if st.session_state.msd_llm_done:
+            st.success("Đã hoàn tất phân tích sâu bằng LLM.")
+
+            tab1, tab2, tab3 = st.tabs([
+                "Phân tích tài liệu",
+                "Hỏi đáp tài liệu",
+                "Dịch thuật"
+            ])
+
+            with tab1:
+                st.markdown(st.session_state.msd_ai_results.get("analysis", ""))
+
+            with tab2:
+                st.subheader("Chat với nội dung tài liệu")
+
+                user_question = st.text_input(
+                    "Nhập câu hỏi về tài liệu:",
+                    key="msd_chat_question"
+                )
+
+                if st.button("Gửi câu hỏi", key="msd_send_question"):
+                    if not user_question.strip():
+                        st.warning("Vui lòng nhập câu hỏi.")
+                    elif not api_key:
+                        st.error("Thiếu API key.")
                     else:
-                        st.success(f"Dự đoán: **{res_local}**")
-                        st.caption("Mô hình PhoBERT tự huấn luyện (Chạy offline)")
-                
-                with col_local_2:
-                    # Xem nhanh văn bản trích xuất
-                    with st.popover("Xem văn bản thô"):
-                        st.text_area("Nội dung:", st.session_state.msd_full_text, height=300)
+                        with st.spinner("Đang trả lời..."):
+                            context = st.session_state.msd_full_text[:12000]
 
-        # =========================================================
-        # GIAI ĐOẠN 2: CHẠY API (Tùy chọn)
-        # =========================================================
-        
-        # Chỉ hiện nút API khi đã xong Local
-        if st.session_state.msd_local_done:
-            st.markdown("---")
-            
-            # Nếu chưa chạy API thì hiện nút
-            if not st.session_state.msd_api_done:
-                st.info("Bạn muốn phân tích chi tiết? (Tóm tắt, Trích xuất thông tin, Dịch thuật...)")
-                if st.button("🧠 Bước 2: Phân tích sâu với AI (Call API)", type="secondary", use_container_width=True):
+                            qa_prompt = f"""
+Bạn là trợ lý phân tích tài liệu.
+
+Dựa trên nội dung tài liệu sau, hãy trả lời câu hỏi của người dùng.
+Chỉ trả lời dựa trên nội dung được cung cấp. Nếu không có thông tin, hãy nói rõ là không tìm thấy trong tài liệu.
+
+NỘI DUNG TÀI LIỆU:
+{context}
+
+CÂU HỎI:
+{user_question}
+
+TRẢ LỜI:
+"""
+
+                            answer = asyncio.run(
+                                generate_groq_response(api_key, qa_prompt)
+                            )
+
+                            st.markdown(answer)
+
+            with tab3:
+                st.subheader("Dịch nội dung tài liệu")
+
+                target_lang = st.selectbox(
+                    "Chọn ngôn ngữ:",
+                    ["English", "Japanese", "Chinese", "Korean"]
+                )
+
+                if st.button("Dịch tài liệu", key="msd_translate_btn"):
                     if not api_key:
-                        st.error("Thiếu API Key!")
+                        st.error("Thiếu API key.")
                     else:
-                        with st.spinner("Đang gửi dữ liệu lên đám mây..."):
-                            try:
-                                e, r, s, c = asyncio.run(process_document_for_main_smartdoc(api_key, st.session_state.msd_full_text))
-                                st.session_state.msd_ai_results = {
-                                    "entities": e, 
-                                    "relationships": r, 
-                                    "summary": s, 
-                                    "classification": c 
-                                }
-                                st.session_state.msd_api_done = True # Đánh dấu xong bước 2
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Lỗi API: {e}")
+                        with st.spinner("Đang dịch..."):
+                            translate_prompt = f"""
+Hãy dịch nội dung tài liệu sau sang {target_lang}.
+Giữ nguyên cấu trúc chính của tài liệu.
 
-            # HIỂN THỊ KẾT QUẢ GIAI ĐOẠN 2 (Nếu đã chạy xong)
-            if st.session_state.msd_api_done:
-                st.success("✅ Đã hoàn tất phân tích sâu!")
-                
-                # So sánh nhẹ
-                api_class = st.session_state.msd_ai_results.get("classification", "N/A")
-                st.caption(f"🤖 AI API cũng nhận định đây là: **{api_class}**")
+NỘI DUNG:
+{st.session_state.msd_full_text[:6000]}
+"""
 
-                # Tabs hiển thị chi tiết
-                tab1, tab2, tab3 = st.tabs(["📝 Tóm tắt & TT", "💬 Hỏi đáp", "🌍 Dịch thuật"])
+                            translation = asyncio.run(
+                                generate_groq_response(api_key, translate_prompt)
+                            )
 
-                with tab1:
-                    res = st.session_state.msd_ai_results or {}
-                    st.subheader("Tóm tắt nội dung:")
-                    st.markdown(f"<div style='background: #f8f8f8; padding:15px; border-radius:10px;'>{res.get('summary', 'Chưa có dữ liệu')}</div>", unsafe_allow_html=True)
-                    
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        st.markdown("**Thực thể:**")
-                        st.info(res.get('entities', 'N/A'))
-                    with c2:
-                        st.markdown("**Quan hệ:**")
-                        st.info(res.get('relationships', 'N/A'))
+                            st.text_area(
+                                "Bản dịch:",
+                                translation,
+                                height=400
+                            )
 
-                with tab2:
-                    st.subheader("Chat với tài liệu")
-                    user_q = st.text_input("Đặt câu hỏi:", key="chat_q")
-                    if user_q and st.button("Gửi"):
-                         with st.spinner("Thinking..."):
-                            ans = asyncio.run(generate_groq_response(api_key, f"Context:\n{st.session_state.msd_full_text[:10000]}\n\nQuestion: {user_q}"))
-                            st.write(ans)
+            st.markdown("---")
+            display_random_meme()
 
-                with tab3:
-                    st.subheader("Dịch thuật")
-                    lang = st.selectbox("Ngôn ngữ:", ["English", "Chinese", "Japanese"])
-                    if st.button("Dịch ngay"):
-                         with st.spinner("Translating..."):
-                            trans = asyncio.run(generate_groq_response(api_key, f"Translate to {lang}:\n{st.session_state.msd_full_text[:3000]}"))
-                            st.text_area("Kết quả:", trans)
-                
-                st.markdown("---")
-                display_random_meme()
 
-    else:
-        st.info("👈 Vui lòng tải lên file PDF để bắt đầu.")
+def build_llm_document_analysis_prompt(text: str, phobert_result: dict):
+    label = "Không xác định"
+    confidence = 0.0
+
+    if phobert_result and "error" not in phobert_result:
+        label = phobert_result.get("display_label", "Không xác định")
+        confidence = phobert_result.get("confidence", 0.0) * 100
+
+    text_for_llm = text[:12000]
+
+    prompt = f"""
+Bạn là chuyên gia phân tích tài liệu số.
+
+Thông tin từ mô hình phân loại local:
+- Mô hình: PhoBERT fine-tune
+- Loại tài liệu dự đoán: {label}
+- Độ tin cậy: {confidence:.2f}%
+
+Nhiệm vụ:
+Hãy phân tích nội dung tài liệu bên dưới và trình bày theo cấu trúc sau:
+
+## 1. Loại tài liệu
+- Nhận định loại tài liệu.
+- So sánh ngắn với kết quả PhoBERT.
+- Nếu nội dung không khớp với dự đoán PhoBERT, hãy nêu rõ.
+
+## 2. Tóm tắt nội dung chính
+Tóm tắt ngắn gọn trong 5-8 dòng.
+
+## 3. Thông tin quan trọng được trích xuất
+Tùy theo loại tài liệu, hãy trích xuất các thông tin phù hợp:
+
+Nếu là hóa đơn:
+- Tên bên bán
+- Tên bên mua
+- Mã số thuế
+- Số hóa đơn
+- Ngày lập
+- Tổng tiền
+- Thuế GTGT
+- Hàng hóa/dịch vụ chính
+
+Nếu là hợp đồng lao động:
+- Tên người lao động
+- Tên công ty
+- Chức vụ/vị trí
+- Mức lương
+- Thời hạn hợp đồng
+- Ngày ký
+- Các điều khoản quan trọng
+
+Nếu là biên bản họp:
+- Tên cuộc họp
+- Thời gian
+- Địa điểm
+- Thành phần tham dự
+- Nội dung chính
+- Kết luận/quyết định
+
+## 4. Chất lượng văn bản/OCR
+Đánh giá văn bản có rõ ràng không, có dấu hiệu lỗi OCR không, có thiếu thông tin không.
+
+## 5. Gợi ý xử lý tiếp theo
+Đưa ra 3-5 gợi ý ngắn gọn để người dùng xử lý tài liệu tốt hơn.
+
+NỘI DUNG TÀI LIỆU:
+{text_for_llm}
+"""
+
+    return prompt

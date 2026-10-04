@@ -90,11 +90,11 @@ def main():
         id2label=id2label
     )
 
-    # 4. TRAINING ARGS (TƯƠNG THÍCH MỌI PHIÊN BẢN)
+    # 4. TRAINING ARGS 
     training_args = TrainingArguments(
         output_dir=OUTPUT_DIR,
-        eval_strategy="epoch",           # ĐÃ SỬA: eval_strategy
-        save_strategy="epoch",           # ĐÃ SỬA: save_strategy
+        eval_strategy="epoch",           
+        save_strategy="epoch",           
         learning_rate=2e-5,
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,

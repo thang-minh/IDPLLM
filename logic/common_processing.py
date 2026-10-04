@@ -4,10 +4,13 @@ import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
 import nltk
+import re
 import cv2
 import numpy as np
 import httpx
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from PIL import Image, ImageOps, ImageEnhance
 from concurrent.futures import ThreadPoolExecutor
 
 # --- PDF & IMAGE PROCESSING ---
@@ -35,58 +38,183 @@ def convert_pdf_to_images(pdf_path_or_bytes, dpi=150, first_page=1, last_page=No
         raise ValueError(f"Lỗi chuyển PDF sang ảnh (cần Poppler cho Windows): {e}")
 
 
-def preprocess_image_ocr(img_pil, resize_factor=1.0): # General purpose preprocessing
-    """Preprocesses a PIL image for potentially better OCR results."""
-    try:
-        img_np = np.array(img_pil.convert('RGB'))
-        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-        
-        if resize_factor != 1.0:
-            gray = cv2.resize(gray, None, fx=resize_factor, fy=resize_factor, interpolation=cv2.INTER_CUBIC)
+def preprocess_image_ocr(img_pil, resize_factor=2.0):
+    """
+    Tiền xử lý ảnh để OCR tốt hơn:
+    - Sửa xoay theo EXIF
+    - Ép ảnh về RGB
+    - Phóng to ảnh nếu ảnh nhỏ
+    - Tăng contrast/sharpness
+    - Grayscale
+    - Khử nhiễu nhẹ
+    - Adaptive threshold
 
-        # Adaptive thresholding can be better for varying lighting
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                       cv2.THRESH_BINARY, 11, 2)
-        # Denoising
-        # thresh = cv2.fastNlMeansDenoising(thresh, None, h=10, templateWindowSize=7, searchWindowSize=21)
-        
-        # A bit of blurring can help reduce noise for Tesseract
-        # gray = cv2.medianBlur(gray, 3)
-        # _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    Return: PIL Image đã xử lý.
+    """
+    try:
+        img_pil = ImageOps.exif_transpose(img_pil)
+
+        if img_pil.mode != "RGB":
+            img_pil = img_pil.convert("RGB")
+
+        width, height = img_pil.size
+
+        # Phóng to ảnh để OCR dễ đọc chữ nhỏ
+        if resize_factor and resize_factor != 1.0:
+            img_pil = img_pil.resize(
+                (int(width * resize_factor), int(height * resize_factor)),
+                Image.Resampling.LANCZOS
+            )
+
+        # Tăng chất lượng chữ
+        img_pil = ImageEnhance.Contrast(img_pil).enhance(1.5)
+        img_pil = ImageEnhance.Sharpness(img_pil).enhance(1.4)
+
+        img_np = np.array(img_pil)
+
+        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+
+        # Khử nhiễu nhẹ
+        gray = cv2.fastNlMeansDenoising(
+            gray,
+            None,
+            h=10,
+            templateWindowSize=7,
+            searchWindowSize=21
+        )
+
+        # Adaptive threshold phù hợp ảnh chụp/scan
+        thresh = cv2.adaptiveThreshold(
+            gray,
+            255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY,
+            31,
+            15
+        )
 
         return Image.fromarray(thresh)
-    except Exception as e:
-        # st.warning(f"Lỗi tiền xử lý ảnh: {e}") # UI handles
-        print(f"Lỗi tiền xử lý ảnh: {e}")
-        return img_pil # Return original if error
 
-def extract_text_from_image_pil(img_pil, lang='vie+eng', preprocess=False):
-    """Extracts text from a single PIL image."""
-    try:
-        if preprocess:
-            img_to_ocr = preprocess_image_ocr(img_pil)
-        else:
-            img_to_ocr = img_pil
-        return pytesseract.image_to_string(img_to_ocr, lang=lang)
     except Exception as e:
-        # st.warning(f"Lỗi OCR ảnh: {e}") # UI handles
+        print(f"Lỗi tiền xử lý ảnh OCR: {e}")
+        if img_pil.mode != "RGB":
+            return img_pil.convert("RGB")
+        return img_pil
+
+
+def score_ocr_text(text: str) -> int:
+    """
+    Chấm điểm kết quả OCR để chọn output tốt nhất.
+    Ưu tiên text dài, có nhiều chữ/số và ít ký tự rác.
+    """
+    if not text:
+        return 0
+
+    text = text.strip()
+
+    vietnamese_chars = len(re.findall(
+        r"[a-zA-ZÀ-ỹ0-9]",
+        text
+    ))
+
+    junk_chars = len(re.findall(
+        r"[~`|{}\[\]<>_^=\\]",
+        text
+    ))
+
+    useful_keywords = [
+        "hóa đơn", "hoa don", "gtgt", "mã số thuế", "mst",
+        "sơ yếu", "so yeu", "lý lịch", "ly lich",
+        "cộng hòa", "cong hoa", "độc lập", "doc lap",
+        "họ tên", "ho ten", "ngày sinh", "ngay sinh",
+        "địa chỉ", "dia chi"
+    ]
+
+    keyword_score = 0
+    lower_text = text.lower()
+
+    for kw in useful_keywords:
+        if kw in lower_text:
+            keyword_score += 50
+
+    return vietnamese_chars + keyword_score - junk_chars * 3
+
+
+def extract_text_from_image_pil(img_pil, lang="vie+eng", preprocess=True):
+    """
+    OCR một ảnh PIL.
+    Có thử nhiều cấu hình Tesseract PSM và chọn kết quả tốt nhất.
+    """
+    try:
+        img_pil = ImageOps.exif_transpose(img_pil)
+
+        if img_pil.mode != "RGB":
+            img_pil = img_pil.convert("RGB")
+
+        images_to_try = []
+
+        # 1. Ảnh gốc RGB
+        images_to_try.append(img_pil)
+
+        # 2. Ảnh đã preprocess
+        if preprocess:
+            processed = preprocess_image_ocr(img_pil, resize_factor=2.0)
+            images_to_try.append(processed)
+
+        configs = [
+            "--oem 3 --psm 6",
+            "--oem 3 --psm 4",
+            "--oem 3 --psm 11",
+            "--oem 3 --psm 3",
+        ]
+
+        candidates = []
+
+        for image_variant in images_to_try:
+            for config in configs:
+                text = pytesseract.image_to_string(
+                    image_variant,
+                    lang=lang,
+                    config=config
+                ).strip()
+
+                if text:
+                    candidates.append(text)
+
+        if not candidates:
+            return ""
+
+        best_text = max(candidates, key=score_ocr_text)
+
+        return best_text.strip()
+
+    except Exception as e:
         raise ValueError(f"Lỗi OCR ảnh: {e}")
 
 
-def extract_text_from_list_of_images(images_pil_list, lang='vie+eng', preprocess=False):
-    """Extracts text from a list of PIL images using ThreadPoolExecutor."""
+def extract_text_from_list_of_images(images_pil_list, lang="vie+eng", preprocess=True):
+    """
+    OCR nhiều ảnh bằng ThreadPoolExecutor.
+    """
     if not images_pil_list:
         return ""
-    
+
     results = []
-    with ThreadPoolExecutor(max_workers=4) as executor: # Adjust max_workers as needed
-        futures = [executor.submit(extract_text_from_image_pil, img, lang, preprocess) for img in images_pil_list]
-        for future in futures:
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [
+            executor.submit(extract_text_from_image_pil, img, lang, preprocess)
+            for img in images_pil_list
+        ]
+
+        for idx, future in enumerate(futures, start=1):
             try:
-                results.append(future.result())
+                page_text = future.result()
+                results.append(f"\n--- Trang {idx} ---\n{page_text}")
             except Exception as e:
-                results.append(f"\n[Lỗi OCR một trang: {e}]\n") # Capture error per page
-    return "\n".join(results)
+                results.append(f"\n--- Trang {idx} ---\n[Lỗi OCR một trang: {e}]")
+
+    return "\n".join(results).strip()
 
 # --- TEXT PROCESSING ---
 def preprocess_text_nlp(text):
@@ -104,7 +232,7 @@ def chunk_text(text, max_chars=4000): # Simplified chunking by characters
 
 
 # --- AI PROCESSING (GROQ) ---
-GROQ_MODEL = "llama-3.1-8b-instant"  # Or "mixtral-8x7b-32768" or other valid models
+GROQ_MODEL = "openai/gpt-oss-20b"  # Or "mixtral-8x7b-32768" or other valid models
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 async def generate_groq_response(api_key: str, prompt: str, system_message: str = "You are a helpful assistant.", max_tokens: int = 1024, temperature: float = 0.7):
