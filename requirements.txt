@@ -19,3 +19,10 @@ nltk
 python-docx
 openpyxl
 reportlab
+pdf2image
+img2pdf
+pdf2docx
+pdfplumber
+langchain
+langchain-community
+langchain-huggingface

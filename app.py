@@ -1,192 +1,3 @@
-# # app.py
-# import streamlit as st
-# import os
-# from dotenv import load_dotenv
-# import nltk
-# import pytesseract # Chỉ import ở đây để cấu hình path
-# from datetime import datetime
-
-# POPPLER_PATH_ENV_CONFIG = os.getenv("POPPLER_PATH")
-
-
-# # --- CONFIG BAN ĐẦU (PHẢI LÀ LỆNH STREAMLIT ĐẦU TIÊN) ---
-# st.set_page_config(
-#     page_title="SmartDoc - Trợ lý Tài liệu Thông minh",
-#     page_icon="",
-#     layout="wide",
-#     initial_sidebar_state="expanded",
-#     menu_items={
-#         'Get Help': 'https://www.example.com/help', # Thay bằng link của bạn
-#         'Report a bug': "https://www.example.com/bug", # Thay bằng link của bạn
-#         'About': "# SmartDoc AI \nPhiên bản 1.0\nPhát triển để hỗ trợ xử lý tài liệu thông minh."
-#     }
-# )
-
-# # --- SETUP BIẾN MÔI TRƯỜNG VÀ ĐƯỜNG DẪN ---
-# load_dotenv()
-
-# # Cấu hình Tesseract OCR
-# TESSERACT_PATH_ENV = os.getenv("TESSERACT_CMD")
-# tesseract_found = False
-# if TESSERACT_PATH_ENV and os.path.exists(TESSERACT_PATH_ENV):
-#     pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH_ENV
-#     tesseract_found = True
-# elif os.name == 'nt': # Windows
-#     common_paths = [r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe", r"C:\\Program Files (x86)\\Tesseract-OCR\\tesseract.exe"]
-#     for path in common_paths:
-#         if os.path.exists(path):
-#             pytesseract.pytesseract.tesseract_cmd = path
-#             TESSERACT_PATH_ENV = path # Cập nhật để biết là đã tìm thấy
-#             tesseract_found = True
-#             break
-
-# # Cấu hình Poppler (chủ yếu cho pdf2image trên Windows)
-# POPPLER_PATH_ENV_CONFIG = os.getenv("POPPLER_PATH") # Thường trỏ đến thư mục cha của 'bin' (vd: C:\poppler-24.02.0\Library)
-# # Logic tìm 'bin' từ POPPLER_PATH_ENV_CONFIG sẽ nằm trong common_processing.convert_pdf_to_images
-
-# # API Keys
-# OPENROUTER_API_KEY_ENV = os.getenv("OPENROUTER_API_KEY")
-# GROQ_API_KEY_ENV = os.getenv("GROQ_API_KEY")
-# # Ưu tiên Groq API key nếu có
-# API_KEY_CONFIG = GROQ_API_KEY_ENV if GROQ_API_KEY_ENV else OPENROUTER_API_KEY_ENV
-
-# try:
-#     nltk.data.find('tokenizers/punkt')
-# except LookupError:  # <--- THAY ĐỔI Ở ĐÂY
-#     print("Downloading NLTK 'punkt' tokenizer...") # Thêm print để theo dõi nếu chạy từ console
-#     nltk.download('punkt', quiet=False) # quiet=False để xem output nếu có lỗi tải
-#     print("'punkt' downloaded.")
-# try:
-#     nltk.data.find('corpora/wordnet')
-# except LookupError:  # <--- THAY ĐỔI Ở ĐÂY
-#     print("Downloading NLTK 'wordnet' resource...")
-#     nltk.download('wordnet', quiet=False)
-#     print("'wordnet' downloaded.")
-# try:
-#     nltk.data.find('corpora/omw-1.4') # Một số mô hình wordnet tiếng Việt cần cái này
-# except LookupError:
-#     print("Downloading NLTK 'omw-1.4' resource...")
-#     nltk.download('omw-1.4', quiet=False)
-#     print("'omw-1.4' downloaded.")
-
-
-
-# # --- IMPORT CÁC MODULE UI VÀ LOGIC ---
-# # (Import sau khi các biến môi trường và path đã được load/xử lý)
-# # UI Modules
-# from ui_modules.main_smartdoc_ui import show_main_smartdoc_ui
-# from ui_modules.form_extractor_ui import show_form_extractor_ui
-# from ui_modules.sentiment_analyzer_ui import show_sentiment_analyzer_ui
-# from ui_modules.table_extractor_ui import show_table_extractor_ui
-# from ui_modules.compare_module_ui import show_compare_module_ui
-# from ui_modules.pdf_signer_ui import show_pdf_signer_ui
-# from ui_modules.version_manager_ui import show_version_manager_ui
-# from ui_modules.multi_doc_qna_ui import show_multi_doc_qna_ui # <--- ĐẢM BẢO DÒNG NÀY CÓ VÀ ĐÚNG
-# from ui_modules.translator_ui import show_translator_ui # <--- ĐẢM BẢO DÒNG NÀY CÓ VÀ ĐÚNG
-# from ui_modules.pdf_merge_ui import show_pdf_merge_ui     # <<<<----- THÊM IMPORT NÀY
-# from ui_modules.pdf_split_ui import show_pdf_split_ui     # <<<<----- THÊM IMPORT NÀY
-# from ui_modules.pdf_watermark_ui import show_pdf_watermark_ui # <<<<----- THÊM IMPORT NÀY
-# from ui_modules.pdf_unlock_ui import show_pdf_unlock_ui       # <<<<----- THÊM IMPORT NÀY
-# from ui_modules.pdf_protect_ui import show_pdf_protect_ui     # <<<<----- THÊM IMPORT NÀY
-# from ui_modules.pdf_editor_ui import show_pdf_editor_ui # <<<<----- THÊM IMPORT NÀY
-# from ui_modules.converter_ui import show_converter_ui  # <--- THÊM DÒNG NÀY
-# from ui_modules.pdf_redaction_ui import show_pdf_redaction_ui
-# from ui_modules.knowledge_graph_ui import show_knowledge_graph_ui
-
-# # Utility UI Modules
-# from ui_utils.dark_mode import manage_dark_mode
-# from ui_utils.quotes import get_random_quote
-# # --- SIDEBAR ---
-# with st.sidebar:
-#     # Thêm logo nếu có file logo.png trong thư mục gốc
-#     if os.path.exists("logo.png"):
-#         st.image("logo.png", width=100, use_column_width='auto')
-#     else:
-#         st.markdown("<h1 style='text-align: center; font-weight: bold; font-size: 28px;'>🧰</h1>", unsafe_allow_html=True)
-
-#     st.markdown("<h1 style='text-align: center; font-weight: bold;'>SmartDoc AI</h1>", unsafe_allow_html=True)
-#     st.caption(f"<p style='text-align: center;'>{get_random_quote()}</p>", unsafe_allow_html=True)
-#     st.markdown("---")
-
-#     manage_dark_mode() # Checkbox bật/tắt dark mode
-#     st.markdown("---")
-
-#     st.header("Chọn Chức Năng")
-#     app_mode = st.radio(
-#         "Công cụ:",
-#         [
-#             "Trí tuệ Tài liệu (PDF)",
-#             "Trích xuất Form (Ảnh)",
-#             "Phân tích Cảm xúc",
-#             "Trích xuất Bảng (PDF)",
-#             "Biên tập PDF Cơ bản",
-#             "Ký PDF",
-#             "Ghép PDF",                
-#             "Tách PDF", 
-#             "Công cụ Chuyển đổi Tài liệu (Local)",
-#             "Đóng dấu Watermark PDF",
-#             "Hỏi đáp Đa Tài liệu",
-#             "Dịch Văn bản",
-#             "So sánh Tài liệu (Ảnh)",
-#             "Mở khóa PDF",            
-#             "Bảo vệ PDF" ,
-#             "Knowledge Graph (Mới)",
-#             "Redaction AI (Che thông tin)",
-#             "Quản lý Phiên bản"
-        
-#         ],
-#         label_visibility="collapsed",
-#         key="app_mode_selector"
-#     )
-    
-#     st.markdown("---")
-#     with st.expander("ℹ️ Thông tin Hệ thống", expanded=False):
-#         st.info(f"Tesseract OCR: {'Sẵn sàng' if tesseract_found else ' Không tìm thấy/cấu hình'}")
-#         st.info(f"Poppler Path: {'Đã cấu hình trong .env' if POPPLER_PATH_ENV_CONFIG else '⚠️ Chưa cấu hình (cần cho Windows)'}")
-#         st.info(f"API Key (AI): {' Sẵn sàng' if API_KEY_CONFIG else ' Chưa cấu hình'}")
-#     st.markdown("---")
-#     st.caption(f"© {datetime.now().year} SmartDoc AI by Minh Thắng")
-
-
-# # --- HIỂN THỊ UI CỦA MODULE ĐƯỢC CHỌN ---
-# # Truyền các config cần thiết vào từng UI module
-# if app_mode == "Trí tuệ Tài liệu (PDF)":
-#     show_main_smartdoc_ui(api_key=API_KEY_CONFIG, poppler_path_env=POPPLER_PATH_ENV_CONFIG)
-# elif app_mode == "Trích xuất Form (Ảnh)":
-#     show_form_extractor_ui(api_key=API_KEY_CONFIG)
-# elif app_mode == "Phân tích Cảm xúc":
-#     show_sentiment_analyzer_ui(api_key=API_KEY_CONFIG)
-# elif app_mode == "Trích xuất Bảng (PDF)":
-#     show_table_extractor_ui()
-# elif app_mode == "Ký PDF":
-#     show_pdf_signer_ui()
-# elif app_mode == "Quản lý Phiên bản":
-#     show_version_manager_ui(api_key_for_analysis=API_KEY_CONFIG) # Nếu cần phân tích AI khi lưu version
-# elif app_mode == "Hỏi đáp Đa Tài liệu":
-#     show_multi_doc_qna_ui(api_key=API_KEY_CONFIG, poppler_path_env=POPPLER_PATH_ENV_CONFIG)
-# elif app_mode == "Dịch Văn bản":  # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_translator_ui(api_key=API_KEY_CONFIG)
-# elif app_mode == "Ghép PDF":        # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_pdf_merge_ui()
-# elif app_mode == "Tách PDF":         # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_pdf_split_ui()
-# elif app_mode == " Công cụ Chuyển đổi Tài liệu (Local)":         # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_converter_ui()
-# elif app_mode == "Đóng dấu Watermark PDF":  # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_pdf_watermark_ui()
-# elif app_mode == "So sánh Tài liệu (Ảnh)":
-#     show_compare_module_ui() # Module này tự xử lý tesseract
-# elif app_mode == "Mở khóa PDF":      # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_pdf_unlock_ui()
-# elif app_mode == "Bảo vệ PDF":       # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_pdf_protect_ui()
-# elif app_mode == "Biên tập PDF Cơ bản":  # <<<<----- THÊM KHỐI ELIF NÀY
-#     show_pdf_editor_ui()
-# elif app_mode == "Redaction AI (Che thông tin)":
-#     show_pdf_redaction_ui()
-# elif app_mode == "Knowledge Graph (Mới)":
-#     show_knowledge_graph_ui(api_key=API_KEY_CONFIG)
-
 # app.py
 import streamlit as st
 import os
@@ -195,26 +6,24 @@ import nltk
 import pytesseract
 from datetime import datetime
 
-# ==========================
-# PAGE CONFIG
-# ==========================
-
+# =========================================================
+# 1. PAGE CONFIG (MUST BE FIRST STREAMLIT CALL)
+# =========================================================
 st.set_page_config(
-    page_title="SmartDoc AI - Trợ lý Tài liệu Thông minh",
+    page_title="SmartDoc AI – Enterprise Document Processing",
     page_icon="📄",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        "Get Help": "https://www.example.com/help",
-        "Report a bug": "https://www.example.com/bug",
-        "About": "# SmartDoc AI\nPhiên bản 1.0\nHệ thống xử lý tài liệu thông minh."
+        "Get Help": "https://github.com",
+        "Report a bug": "https://github.com",
+        "About": "# SmartDoc AI Platform\nModern Enterprise Document Processing SaaS."
     }
 )
 
-# ==========================
-# ENV CONFIG
-# ==========================
-
+# =========================================================
+# 2. ENVIRONMENT & SYSTEM INTEGRATION
+# =========================================================
 load_dotenv()
 
 TESSERACT_PATH_ENV = os.getenv("TESSERACT_CMD")
@@ -224,53 +33,41 @@ OPENROUTER_API_KEY_ENV = os.getenv("OPENROUTER_API_KEY")
 GROQ_API_KEY_ENV = os.getenv("GROQ_API_KEY")
 API_KEY_CONFIG = GROQ_API_KEY_ENV if GROQ_API_KEY_ENV else OPENROUTER_API_KEY_ENV
 
-tesseract_found = False
-
 if TESSERACT_PATH_ENV and os.path.exists(TESSERACT_PATH_ENV):
     pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH_ENV
-    tesseract_found = True
 elif os.name == "nt":
-    common_paths = [
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
-    ]
-
-    for path in common_paths:
+    for path in [r"C:\Program Files\Tesseract-OCR\tesseract.exe", r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"]:
         if os.path.exists(path):
             pytesseract.pytesseract.tesseract_cmd = path
-            TESSERACT_PATH_ENV = path
-            tesseract_found = True
             break
 
-
-# ==========================
-# NLTK SETUP
-# ==========================
-
+# Ensure NLTK resources
 def ensure_nltk_resource(resource_path, download_name):
     try:
         nltk.data.find(resource_path)
     except LookupError:
-        nltk.download(download_name, quiet=True)
-
+        try:
+            nltk.download(download_name, quiet=True)
+        except Exception:
+            pass
 
 ensure_nltk_resource("tokenizers/punkt", "punkt")
 ensure_nltk_resource("corpora/wordnet", "wordnet")
 ensure_nltk_resource("corpora/omw-1.4", "omw-1.4")
 
-
-# ==========================
-# IMPORT UI MODULES
-# ==========================
-
+# =========================================================
+# 3. IMPORT UI MODULES & COMPONENTS
+# =========================================================
 from ui_modules.main_smartdoc_ui import show_main_smartdoc_ui
 from ui_modules.form_extractor_ui import show_form_extractor_ui
-from ui_modules.sentiment_analyzer_ui import show_sentiment_analyzer_ui
-from ui_modules.table_extractor_ui import show_table_extractor_ui
-from ui_modules.compare_module_ui import show_compare_module_ui
-from ui_modules.pdf_signer_ui import show_pdf_signer_ui
 from ui_modules.version_manager_ui import show_version_manager_ui
 from ui_modules.multi_doc_qna_ui import show_multi_doc_qna_ui
+from ui_modules.knowledge_graph_ui import show_knowledge_graph_ui
+from ui_modules.pdf_redaction_ui import show_pdf_redaction_ui
+from ui_modules.table_extractor_ui import show_table_extractor_ui
+from ui_modules.compare_module_ui import show_compare_module_ui
+from ui_modules.converter_ui import show_converter_ui
+from ui_modules.sentiment_analyzer_ui import show_sentiment_analyzer_ui
 from ui_modules.translator_ui import show_translator_ui
 from ui_modules.pdf_merge_ui import show_pdf_merge_ui
 from ui_modules.pdf_split_ui import show_pdf_split_ui
@@ -278,299 +75,363 @@ from ui_modules.pdf_watermark_ui import show_pdf_watermark_ui
 from ui_modules.pdf_unlock_ui import show_pdf_unlock_ui
 from ui_modules.pdf_protect_ui import show_pdf_protect_ui
 from ui_modules.pdf_editor_ui import show_pdf_editor_ui
-from ui_modules.converter_ui import show_converter_ui
-from ui_modules.pdf_redaction_ui import show_pdf_redaction_ui
-from ui_modules.knowledge_graph_ui import show_knowledge_graph_ui
+from ui_modules.pdf_signer_ui import show_pdf_signer_ui
 
 from ui_utils.dark_mode import manage_dark_mode
-from ui_utils.quotes import get_random_quote
+from ui_utils.ui_components import (
+    get_runtime_system_status,
+    render_page_header,
+    render_sidebar_system_status,
+)
 
+# Apply Global Design System & SaaS Theme CSS at root
+manage_dark_mode()
 
-# ==========================
-# FEATURE CONFIG
-# ==========================
-
-FEATURE_GROUPS = {
-    "🏠 Tổng quan": {
-        "Trang chủ": {
-            "description": "Xem tổng quan hệ thống và trạng thái các thành phần.",
-            "requires": []
-        }
+# =========================================================
+# 4. NAVIGATION REGISTRY (ORGANIZED BY SPECIFICATION)
+# =========================================================
+NAVIGATION_GROUPS = {
+    "AI DOCUMENT": {
+        "AI Document Processing": {
+            "icon": "🧠",
+            "desc": "PhoBERT fine-tuned classifier, PDF text extraction & deep LLM analysis.",
+            "route": lambda: show_main_smartdoc_ui(API_KEY_CONFIG, POPPLER_PATH_ENV_CONFIG)
+        },
+        "Form Extraction": {
+            "icon": "🎯",
+            "desc": "EfficientNetV2B0 classification, OCR & structured JSON extraction.",
+            "route": lambda: show_form_extractor_ui(API_KEY_CONFIG)
+        },
+        "Document Storage": {
+            "icon": "🗂️",
+            "desc": "Track document version history, restore states and view audits.",
+            "route": lambda: show_version_manager_ui(API_KEY_CONFIG)
+        },
     },
-
-    "🤖 AI xử lý tài liệu": {
-        "Trí tuệ Tài liệu (PDF)": {
-            "description": "OCR, phân loại, tóm tắt và phân tích nội dung PDF.",
-            "requires": ["api", "ocr", "poppler"]
-        },
-        "Trích xuất Form (Ảnh)": {
-            "description": "Phân loại ảnh tài liệu bằng EfficientNetV2B0, OCR và trích xuất thông tin bằng LLM.",
-            "requires": ["api", "ocr"]
-        },
-        "Hỏi đáp Đa Tài liệu": {
-            "description": "Hỏi đáp trên nhiều tài liệu bằng RAG/FAISS.",
-            "requires": ["api", "ocr", "poppler"]
+    "AI KNOWLEDGE": {
+        "Document Q&A": {
+            "icon": "💬",
+            "desc": "Multi-document semantic search and RAG synthesis with FAISS.",
+            "route": lambda: show_multi_doc_qna_ui(API_KEY_CONFIG, POPPLER_PATH_ENV_CONFIG)
         },
         "Knowledge Graph": {
-            "description": "Tạo biểu đồ tri thức từ nội dung văn bản/tài liệu.",
-            "requires": ["api"]
-        },
-        "Redaction AI": {
-            "description": "Che thông tin nhạy cảm trong tài liệu.",
-            "requires": ["api", "ocr"]
+            "icon": "🕸️",
+            "desc": "Visual graph of inter-document entity relationships.",
+            "route": lambda: show_knowledge_graph_ui(API_KEY_CONFIG, POPPLER_PATH_ENV_CONFIG)
         },
     },
-
-    "🧠 Phân tích ngôn ngữ": {
-        "Phân tích Cảm xúc": {
-            "description": "Phân tích sắc thái tích cực/tiêu cực của văn bản.",
-            "requires": ["api"]
-        },
-        "Dịch Văn bản": {
-            "description": "Dịch văn bản sang ngôn ngữ khác.",
-            "requires": ["api"]
+    "AI SECURITY": {
+        "AI Redaction": {
+            "icon": "🛡️",
+            "desc": "Detect and sanitize sensitive PII data directly in PDF streams.",
+            "route": lambda: show_pdf_redaction_ui()
         },
     },
-
-    "📑 Công cụ PDF": {
-        "Ghép PDF": {
-            "description": "Gộp nhiều file PDF thành một file.",
-            "requires": []
+    "DOCUMENT TOOLS": {
+        "Table Extractor": {
+            "icon": "📋",
+            "desc": "Extract tabular data from PDFs into clean Excel/CSV formats.",
+            "route": lambda: show_table_extractor_ui()
         },
-        "Tách PDF": {
-            "description": "Tách PDF theo khoảng trang.",
-            "requires": []
+        "Document Comparison": {
+            "icon": "⚖️",
+            "desc": "Visual optical comparison and character diff across versions.",
+            "route": lambda: show_compare_module_ui()
         },
-        "Biên tập PDF Cơ bản": {
-            "description": "Xoay, xóa, sắp xếp lại trang PDF.",
-            "requires": []
+        "Document Converter": {
+            "icon": "🔄",
+            "desc": "Offline conversion between Images, PDF and Microsoft Word.",
+            "route": lambda: show_converter_ui()
         },
-        "Ký PDF": {
-            "description": "Thêm chữ ký/ảnh ký vào PDF.",
-            "requires": []
+        "Sentiment Analysis": {
+            "icon": "📈",
+            "desc": "Analyze sentiment polarity, keywords and response recommendations.",
+            "route": lambda: show_sentiment_analyzer_ui(API_KEY_CONFIG)
         },
-        "Đóng dấu Watermark PDF": {
-            "description": "Thêm watermark văn bản hoặc ảnh vào PDF.",
-            "requires": []
+        "Document Translator": {
+            "icon": "🌐",
+            "desc": "Context-aware translation for cross-border documents.",
+            "route": lambda: show_translator_ui(API_KEY_CONFIG)
         },
-        "Bảo vệ PDF": {
-            "description": "Đặt mật khẩu cho PDF.",
-            "requires": []
+        "PDF Editor": {
+            "icon": "✏️",
+            "desc": "Reorder, delete, rotate and optimize PDF pages.",
+            "route": lambda: show_pdf_editor_ui()
         },
-        "Mở khóa PDF": {
-            "description": "Mở khóa PDF nếu có mật khẩu hợp lệ.",
-            "requires": []
+        "PDF Signer": {
+            "icon": "✍️",
+            "desc": "Digitally sign or place stamp images onto PDF pages.",
+            "route": lambda: show_pdf_signer_ui()
+        },
+        "PDF Merge": {
+            "icon": "🧩",
+            "desc": "Combine multiple PDF documents into a single unified file.",
+            "route": lambda: show_pdf_merge_ui()
+        },
+        "PDF Split": {
+            "icon": "✂️",
+            "desc": "Split PDF files into individual pages or custom ranges.",
+            "route": lambda: show_pdf_split_ui()
+        },
+        "PDF Watermark": {
+            "icon": "💧",
+            "desc": "Stamp text or image watermarks onto PDF pages.",
+            "route": lambda: show_pdf_watermark_ui()
+        },
+        "PDF Protect": {
+            "icon": "🔒",
+            "desc": "Encrypt and password-protect confidential PDF files.",
+            "route": lambda: show_pdf_protect_ui()
+        },
+        "PDF Unlock": {
+            "icon": "🔓",
+            "desc": "Remove password restrictions from authorized PDFs.",
+            "route": lambda: show_pdf_unlock_ui()
         },
     },
-
-    "📊 Trích xuất dữ liệu": {
-        "Trích xuất Bảng (PDF)": {
-            "description": "Trích xuất bảng từ PDF sang dữ liệu có cấu trúc.",
-            "requires": []
-        },
-        "Chuyển đổi Tài liệu (Local)": {
-            "description": "Chuyển đổi tài liệu bằng công cụ local.",
-            "requires": []
-        },
-    },
-
-    "🗂️ Quản lý & so sánh": {
-        "So sánh Tài liệu (Ảnh)": {
-            "description": "So sánh hai ảnh tài liệu.",
-            "requires": ["ocr"]
-        },
-        "Quản lý Phiên bản": {
-            "description": "Lưu, xem và phân tích các phiên bản tài liệu.",
-            "requires": ["api"]
-        },
+    "SYSTEM": {
+        "System Status": {
+            "icon": "⚡",
+            "desc": "Central operations overview, system runtime health and fast actions.",
+            "route": lambda: show_home_dashboard()
+        }
     }
 }
 
+if "current_nav_feature" not in st.session_state:
+    st.session_state.current_nav_feature = "System Status"
 
-# ==========================
-# ROUTER
-# ==========================
+def navigate_to(feature_name: str):
+    st.session_state.current_nav_feature = feature_name
+    for group_name, features in NAVIGATION_GROUPS.items():
+        if feature_name in features:
+            st.session_state.selected_nav_group = group_name
+            break
+    st.rerun()
 
-def run_feature(app_mode):
-    routes = {
-        "Trí tuệ Tài liệu (PDF)": lambda: show_main_smartdoc_ui(
-            api_key=API_KEY_CONFIG,
-            poppler_path_env=POPPLER_PATH_ENV_CONFIG
-        ),
-        "Trích xuất Form (Ảnh)": lambda: show_form_extractor_ui(
-            api_key=API_KEY_CONFIG
-        ),
-        "Phân tích Cảm xúc": lambda: show_sentiment_analyzer_ui(
-            api_key=API_KEY_CONFIG
-        ),
-        "Trích xuất Bảng (PDF)": lambda: show_table_extractor_ui(),
-        "Biên tập PDF Cơ bản": lambda: show_pdf_editor_ui(),
-        "Ký PDF": lambda: show_pdf_signer_ui(),
-        "Ghép PDF": lambda: show_pdf_merge_ui(),
-        "Tách PDF": lambda: show_pdf_split_ui(),
-        "Chuyển đổi Tài liệu (Local)": lambda: show_converter_ui(),
-        "Đóng dấu Watermark PDF": lambda: show_pdf_watermark_ui(),
-        "Hỏi đáp Đa Tài liệu": lambda: show_multi_doc_qna_ui(
-            api_key=API_KEY_CONFIG,
-            poppler_path_env=POPPLER_PATH_ENV_CONFIG
-        ),
-        "Dịch Văn bản": lambda: show_translator_ui(
-            api_key=API_KEY_CONFIG
-        ),
-        "So sánh Tài liệu (Ảnh)": lambda: show_compare_module_ui(),
-        "Mở khóa PDF": lambda: show_pdf_unlock_ui(),
-        "Bảo vệ PDF": lambda: show_pdf_protect_ui(),
-        "Knowledge Graph": lambda: show_knowledge_graph_ui(
-            api_key=API_KEY_CONFIG,
-            poppler_path_env=POPPLER_PATH_ENV_CONFIG
-        ),
-        "Redaction AI": lambda: show_pdf_redaction_ui(),
-        "Quản lý Phiên bản": lambda: show_version_manager_ui(
-            api_key_for_analysis=API_KEY_CONFIG
-        ),
-    }
-
-    if app_mode == "Trang chủ":
-        show_home_dashboard()
-        return
-
-    feature = routes.get(app_mode)
-
-    if feature:
-        feature()
-    else:
-        st.error(f"Chức năng chưa được cấu hình route: {app_mode}")
-
-
-# ==========================
-# HOME DASHBOARD
-# ==========================
-
-def status_badge(ok, ok_text="Sẵn sàng", fail_text="Chưa cấu hình"):
-    return ok_text if ok else fail_text
-
-
+# =========================================================
+# 5. HOME DASHBOARD (ENTERPRISE AI SAAS DASHBOARD)
+# =========================================================
 def show_home_dashboard():
-    st.markdown(
-        "<h1 style='text-align: center;'>📄 SmartDoc AI</h1>",
-        unsafe_allow_html=True
+    sys_status = get_runtime_system_status()
+
+    badges = [
+        {"text": "● System Operational", "type": "success"},
+        {"text": "Production v1.0", "type": "neutral"},
+    ]
+    render_page_header(
+        title="SmartDoc AI Platform",
+        description="Comprehensive enterprise AI platform for automated document intelligence, classification, structured data extraction, and semantic search.",
+        breadcrumb="SYSTEM / DASHBOARD OVERVIEW",
+        badges=badges
     )
 
-    st.markdown(
-        """
-        <p style='text-align: center; font-size: 18px;'>
-        Hệ thống hỗ trợ xử lý tài liệu thông minh: OCR, phân loại tài liệu, trích xuất thông tin,
-        hỏi đáp tài liệu, xử lý PDF và quản lý phiên bản.
+    # Hero Card (Stripe & Linear SaaS Style)
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%);
+                border: 1px solid rgba(99, 102, 241, 0.4);
+                border-radius: 14px;
+                padding: 24px 30px;
+                margin-bottom: 24px;
+                box-shadow: 0 10px 25px -5px rgba(49, 46, 129, 0.25);">
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 9999px; margin-bottom: 14px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+            <span style="font-size: 11.5px; font-weight: 700; color: #E0E7FF; letter-spacing: 0.06em; text-transform: uppercase;">SmartDoc AI Platform v2.0</span>
+        </div>
+        <h1 style="color: #FFFFFF !important; font-size: 26px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.025em; line-height: 1.25;">
+            Nền tảng Xử lý Tài liệu Thông minh AI
+        </h1>
+        <p style="color: #C7D2FE !important; font-size: 14px; line-height: 1.6; margin: 0; max-width: 820px;">
+            Hệ sinh thái xử lý tài liệu thông minh kết hợp mô hình AI thị giác máy tính cục bộ (EfficientNetV2), mô hình ngôn ngữ tiếng Việt (PhoBERT), cùng công nghệ OCR tiên tiến và tìm kiếm ngữ nghĩa vector (FAISS RAG). Tự động hóa bóc tách hóa đơn, hợp đồng và hồ sơ với độ chính xác cao.
         </p>
-        """,
-        unsafe_allow_html=True
-    )
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("---")
+    # System Status Cards
+    st.markdown("### ⚡ System Status")
+    st.caption("Real-time runtime health metrics across all underlying engines.")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.metric("OCR Engine", status_badge(tesseract_found, "Ready", "Missing"))
+        st.markdown(f"""
+        <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem 1.15rem; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748B; letter-spacing: 0.05em; margin-bottom: 4px;">Image Classifier</div>
+            <div style="font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">EfficientNetV2B0</div>
+            {'<span class="badge-soft-success">● Model Ready</span>' if sys_status["efficientnet"] else '<span class="badge-soft-warning">○ Not Loaded</span>'}
+        </div>
+        """, unsafe_allow_html=True)
 
     with col2:
-        st.metric("AI API", status_badge(bool(API_KEY_CONFIG), "Ready", "Missing"))
+        st.markdown(f"""
+        <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem 1.15rem; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748B; letter-spacing: 0.05em; margin-bottom: 4px;">OCR Service</div>
+            <div style="font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">Tesseract OCR</div>
+            {'<span class="badge-soft-success">● OCR Online</span>' if sys_status["ocr"] else '<span class="badge-soft-danger">○ OCR Offline</span>'}
+        </div>
+        """, unsafe_allow_html=True)
 
     with col3:
-        st.metric("Poppler", status_badge(bool(POPPLER_PATH_ENV_CONFIG), "Configured", "Optional/Missing"))
+        st.markdown(f"""
+        <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem 1.15rem; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748B; letter-spacing: 0.05em; margin-bottom: 4px;">LLM Integration</div>
+            <div style="font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">Groq / OpenRouter</div>
+            {'<span class="badge-soft-indigo">● Configured</span>' if sys_status["llm"] else '<span class="badge-soft-danger">○ Key Missing</span>'}
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("### Nhóm chức năng")
+    with col4:
+        st.markdown(f"""
+        <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem 1.15rem; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748B; letter-spacing: 0.05em; margin-bottom: 4px;">PDF Engine</div>
+            <div style="font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">PyMuPDF / Poppler</div>
+            {'<span class="badge-soft-neutral">● Poppler Available</span>' if sys_status["poppler"] else '<span class="badge-soft-neutral">● Native Engine</span>'}
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+
+    # 3 Fast Actions Cards
+    st.markdown("### 🚀 Fast Actions")
+    st.caption("Direct one-click access to core AI document pipelines.")
 
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.info("🤖 **AI xử lý tài liệu**\n\nPhân loại, OCR, trích xuất form, hỏi đáp và Knowledge Graph.")
+        with st.container(border=True):
+            st.markdown("""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 26px;">🎯</span>
+                <span class="badge-soft-indigo">Core Feature</span>
+            </div>
+            <h4 style="margin: 0 0 6px 0; font-weight: 700; color: #0F172A;">Form Extraction</h4>
+            <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; min-height: 54px; line-height: 1.5;">
+                AI classification (EfficientNetV2B0), optical character recognition and structured JSON key-value extraction.
+            </p>
+            """, unsafe_allow_html=True)
+            if st.button("Open Form Extraction →", key="dash_btn_form", type="primary", use_container_width=True):
+                navigate_to("Form Extraction")
 
     with c2:
-        st.success("📑 **Công cụ PDF**\n\nGhép, tách, ký, watermark, bảo vệ và biên tập PDF.")
+        with st.container(border=True):
+            st.markdown("""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 26px;">🧠</span>
+                <span class="badge-soft-success">PhoBERT + LLM</span>
+            </div>
+            <h4 style="margin: 0 0 6px 0; font-weight: 700; color: #0F172A;">AI Document Processing</h4>
+            <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; min-height: 54px; line-height: 1.5;">
+                Classify documents locally with fine-tuned Vietnamese PhoBERT transformer, analyze terms and chat with PDF.
+            </p>
+            """, unsafe_allow_html=True)
+            if st.button("Open Document AI →", key="dash_btn_doc", type="primary", use_container_width=True):
+                navigate_to("AI Document Processing")
 
     with c3:
-        st.warning("📊 **Trích xuất dữ liệu**\n\nTrích xuất bảng PDF, chuyển đổi tài liệu và phân tích văn bản.")
+        with st.container(border=True):
+            st.markdown("""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 26px;">💬</span>
+                <span class="badge-soft-warning">RAG + FAISS</span>
+            </div>
+            <h4 style="margin: 0 0 6px 0; font-weight: 700; color: #0F172A;">Document Q&A</h4>
+            <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; min-height: 54px; line-height: 1.5;">
+                Vector index multiple PDF knowledge bases with FAISS and perform context-grounded conversational search.
+            </p>
+            """, unsafe_allow_html=True)
+            if st.button("Open Document Q&A →", key="dash_btn_rag", type="primary", use_container_width=True):
+                navigate_to("Document Q&A")
 
-    st.markdown("### Quy trình demo đề xuất")
-
-    st.write(
-        """
-        1. Vào **Trích xuất Form (Ảnh)** để demo model EfficientNetV2B0 phân loại ảnh tài liệu.
-        2. Vào **Trí tuệ Tài liệu (PDF)** để demo OCR + PhoBERT + LLM phân tích tài liệu PDF.
-        3. Vào **Hỏi đáp Đa Tài liệu** để demo RAG/FAISS.
-        4. Vào nhóm **Công cụ PDF** để demo các chức năng xử lý file thực tế.
-        """
-    )
-
-
-# ==========================
-# SIDEBAR
-# ==========================
-
+# =========================================================
+# 6. SIDEBAR NAVIGATION
+# =========================================================
 with st.sidebar:
-    if os.path.exists("logo.png"):
-        st.image("logo.png", width=120)
-    else:
-        st.markdown(
-            "<h1 style='text-align: center; font-size: 34px;'>📄</h1>",
-            unsafe_allow_html=True
-        )
+    # Branding Header
+    st.markdown("""
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <div style="background: #4F46E5; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 18px;">
+            S
+        </div>
+        <div>
+            <div style="font-weight: 800; font-size: 16px; color: #0F172A; letter-spacing: -0.02em; line-height: 1.2;">SmartDoc AI</div>
+            <div style="font-size: 11px; color: #64748B; font-weight: 500;">Intelligent Document Platform</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown(
-        "<h1 style='text-align: center; font-weight: 800;'>SmartDoc AI</h1>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-    st.caption(f"<p style='text-align: center;'>{get_random_quote()}</p>", unsafe_allow_html=True)
+    # Determine Group
+    current_feat = st.session_state.current_nav_feature
 
-    st.markdown("---")
-
-    manage_dark_mode()
-
-    st.markdown("---")
-
-    st.subheader("Điều hướng")
+    group_names = list(NAVIGATION_GROUPS.keys())
+    default_grp_idx = 0
+    for idx, grp in enumerate(group_names):
+        if current_feat in NAVIGATION_GROUPS[grp]:
+            default_grp_idx = idx
+            break
 
     selected_group = st.selectbox(
-        "Nhóm chức năng",
-        list(FEATURE_GROUPS.keys()),
-        key="selected_feature_group"
+        "Navigation Group",
+        group_names,
+        index=default_grp_idx,
+        key="selected_nav_group"
     )
 
-    feature_names = list(FEATURE_GROUPS[selected_group].keys())
+    feature_options = list(NAVIGATION_GROUPS[selected_group].keys())
+
+    def format_nav_item(name):
+        meta = NAVIGATION_GROUPS[selected_group].get(name, {})
+        return f"{meta.get('icon', '📄')}  {name}"
+
+    current_idx = 0
+    if current_feat in feature_options:
+        current_idx = feature_options.index(current_feat)
 
     selected_feature = st.radio(
-        "Chức năng",
-        feature_names,
+        "Feature",
+        feature_options,
+        index=current_idx,
+        format_func=format_nav_item,
         label_visibility="collapsed",
-        key="selected_feature"
+        key="feature_nav_radio"
     )
 
-    selected_meta = FEATURE_GROUPS[selected_group][selected_feature]
+    if selected_feature != st.session_state.current_nav_feature:
+        st.session_state.current_nav_feature = selected_feature
+        st.rerun()
 
-    st.caption(selected_meta["description"])
+    # Feature Context Tooltip Card
+    active_meta = NAVIGATION_GROUPS[selected_group][selected_feature]
+    st.markdown(f"""
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-top: 12px;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #4F46E5; margin-bottom: 3px;">
+            {selected_group}
+        </div>
+        <div style="font-size: 12.5px; color: #475569; line-height: 1.45;">
+            {active_meta.get('desc', '')}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
-    with st.expander("Trạng thái hệ thống", expanded=False):
-        st.write(f"OCR/Tesseract: {'✅ Sẵn sàng' if tesseract_found else '⚠️ Chưa tìm thấy'}")
-        st.write(f"Poppler: {'✅ Đã cấu hình' if POPPLER_PATH_ENV_CONFIG else '⚠️ Chưa cấu hình'}")
-        st.write(f"AI API Key: {'✅ Sẵn sàng' if API_KEY_CONFIG else '⚠️ Chưa cấu hình'}")
+    # Compact Collapsible System Status Section
+    render_sidebar_system_status()
 
-        if TESSERACT_PATH_ENV:
-            st.caption(f"Tesseract path: {TESSERACT_PATH_ENV}")
+    st.caption(f"<p style='font-size: 11px; color: #94A3B8; text-align: center; margin-top: 14px;'>SmartDoc AI SaaS © {datetime.now().year}</p>", unsafe_allow_html=True)
 
-        if POPPLER_PATH_ENV_CONFIG:
-            st.caption(f"Poppler path: {POPPLER_PATH_ENV_CONFIG}")
+# =========================================================
+# 7. ROUTER EXECUTION
+# =========================================================
+active_feature = st.session_state.current_nav_feature
+route_found = False
 
-    st.markdown("---")
+for grp, feats in NAVIGATION_GROUPS.items():
+    if active_feature in feats:
+        feats[active_feature]["route"]()
+        route_found = True
+        break
 
-    st.caption(f"© {datetime.now().year} SmartDoc AI")
-
-
-# ==========================
-# MAIN CONTENT
-# ==========================
-
-run_feature(selected_feature)
+if not route_found:
+    st.error(f"Route not configured for: {active_feature}")
