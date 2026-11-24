@@ -2,7 +2,6 @@
 import streamlit as st
 import asyncio
 
-# Import các hàm logic
 from logic.multi_doc_qna_logic import (
     extract_text_from_uploaded_files,
     get_text_chunks,
@@ -12,159 +11,262 @@ from logic.multi_doc_qna_logic import (
     get_answer_from_llm_with_context
 )
 from ui_utils.fun_meme import display_random_meme
-from langchain_huggingface import HuggingFaceEmbeddings  # ← mới, không bị warning nữa
-# --- Khởi tạo session state cho module ---
-def init_session_state_mdqna():
-    if 'mdqna_vector_store' not in st.session_state:
-        st.session_state.mdqna_vector_store = None
-    if 'mdqna_embedding_model' not in st.session_state:
-        st.session_state.mdqna_embedding_model = None
-    if 'mdqna_processed_files' not in st.session_state: # Lưu tên các file đã xử lý để tránh lặp lại
-        st.session_state.mdqna_processed_files = set()
-    if 'mdqna_retrieved_chunks' not in st.session_state:
-        st.session_state.mdqna_retrieved_chunks = []
-    if 'mdqna_llm_answer' not in st.session_state:
-        st.session_state.mdqna_llm_answer = ""
 
+# =========================================================
+# HELPER FUNCTIONS & STATE
+# =========================================================
+
+def init_session_state_mdqna():
+    defaults = {
+        "mdqna_vector_store": None,
+        "mdqna_embedding_model": None,
+        "mdqna_processed_files": set(),
+        "mdqna_retrieved_chunks": [],
+        "mdqna_llm_answer": "",
+        "mdqna_total_chunks": 0,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+def render_pipeline_tracker(current_step: int):
+    steps = [
+        ("1. Nạp Tài liệu PDF", 1),
+        ("2. Xây dựng Vector FAISS", 2),
+        ("3. Hỏi đáp RAG & Đối thoại", 3)
+    ]
+    html_parts = []
+    for label, step_idx in steps:
+        if step_idx < current_step:
+            cls = "pipeline-step completed"
+            icon = "✓"
+        elif step_idx == current_step:
+            cls = "pipeline-step active"
+            icon = "●"
+        else:
+            cls = "pipeline-step"
+            icon = "○"
+        html_parts.append(f'<span class="{cls}">{icon} {label}</span>')
+
+    separator = '<span class="pipeline-separator"> ➔ </span>'
+    bar_html = f'<div class="pipeline-step-bar">{separator.join(html_parts)}</div>'
+    st.markdown(bar_html, unsafe_allow_html=True)
+
+# =========================================================
+# MAIN MULTI-DOC Q&A UI (RAG ENGINE)
+# =========================================================
 
 def show_multi_doc_qna_ui(api_key, poppler_path_env=None):
     init_session_state_mdqna()
 
-    st.markdown("<h1 style='text-align: center;'>📚 Hỏi đáp và Tìm kiếm Ngữ nghĩa trên Nhiều Tài liệu</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Tải lên một hoặc nhiều file PDF, sau đó đặt câu hỏi hoặc tìm kiếm thông tin trong toàn bộ các tài liệu đó.</p>", unsafe_allow_html=True)
-    st.markdown("---")
+    # SaaS Header
+    st.markdown("""
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+        <div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+                <span class="saas-badge saas-badge-indigo">RAG Knowledge Engine</span>
+                <span class="saas-badge saas-badge-success">FAISS Vector Search</span>
+            </div>
+            <h2 style="margin: 0; font-weight: 800; letter-spacing: -0.02em;">Hỏi đáp & Tìm kiếm Đa Tài liệu</h2>
+            <p style="color: #64748B; font-size: 14px; margin: 4px 0 0 0;">
+                Truy vấn ngữ nghĩa và tương tác với kho tài liệu bằng mô hình nhúng vector Sentence-Transformers và LLM RAG.
+            </p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # --- 1. Tải lên và Xử lý Tài liệu ---
-    with st.container(border=True):
-        st.subheader("📂 Bước 1: Tải lên và Xây dựng Cơ sở Tri thức")
-        uploaded_files = st.file_uploader(
-            "Tải lên các file PDF của bạn tại đây:",
-            type="pdf",
-            accept_multiple_files=True,
-            key="mdqna_file_uploader",
-            help="Bạn có thể chọn nhiều file PDF cùng lúc."
-        )
+    # Xác định step hiện tại cho Tracker
+    step = 1
+    if st.session_state.mdqna_vector_store is not None:
+        step = 3
+    render_pipeline_tracker(step)
 
-        # Hiển thị nút xử lý chỉ khi có file mới được tải lên chưa được xử lý
-        new_files_to_process = []
-        if uploaded_files:
-            current_file_names = {f.name for f in uploaded_files}
-            if not st.session_state.mdqna_processed_files.issuperset(current_file_names) or not st.session_state.mdqna_vector_store:
-                new_files_to_process = uploaded_files # Xử lý tất cả nếu có file mới hoặc chưa có vector store
+    # =========================================================
+    # SPLIT VIEW 2 CỘT NGANG HÀNG
+    # CỘT TRÁI: QUẢN LÝ TẬP TIN & INDEXING VECTOR
+    # CỘT PHẢI: TRUY VẤN NGỮ NGHĨA & HỎI ĐÁP RAG
+    # =========================================================
+    col_files, col_chat = st.columns([1, 1.25], gap="large")
 
-        if new_files_to_process:
-            if st.button("⚙️ Xây dựng Cơ sở Tri thức từ Tài liệu", type="primary", use_container_width=True, key="mdqna_process_button"):
-                with st.spinner("Đang xử lý tài liệu và tạo index... Việc này có thể mất vài phút tùy số lượng và kích thước file."):
-                    try:
-                        # 1. Trích xuất văn bản
-                        docs_data = extract_text_from_uploaded_files(new_files_to_process, poppler_path_env)
-                        if not docs_data:
-                            st.warning("Không thể trích xuất văn bản từ các file đã tải lên, hoặc file không có nội dung.")
-                            return
-
-                        # 2. Chia chunks
-                        text_chunks_with_metadata = get_text_chunks(docs_data)
-                        if not text_chunks_with_metadata:
-                            st.warning("Không thể chia nhỏ văn bản thành các đoạn (chunks).")
-                            return
-
-                        # 3. Tải mô hình embedding (chỉ tải một lần)
-                        if st.session_state.mdqna_embedding_model is None:
-                            st.session_state.mdqna_embedding_model = get_embedding_model(
-                                model_name="sentence-transformers/paraphrase-multilingual-mpnet-base-v2" # Model tốt cho đa ngôn ngữ
-                            )
-                        
-                        # 4. Tạo vector store
-                        st.session_state.mdqna_vector_store = create_vector_store_from_chunks(
-                            text_chunks_with_metadata,
-                            st.session_state.mdqna_embedding_model
-                        )
-                        
-                        if st.session_state.mdqna_vector_store:
-                            st.session_state.mdqna_processed_files.update(current_file_names) # Đánh dấu đã xử lý
-                            st.success(f"Đã xử lý {len(new_files_to_process)} tài liệu và xây dựng xong cơ sở tri thức!")
-                        else:
-                            st.error("Không thể tạo cơ sở tri thức từ các tài liệu.")
-                    
-                    except ValueError as ve: # Lỗi từ logic của chúng ta
-                        st.error(f"Lỗi xử lý: {ve}")
-                    except Exception as e:
-                        st.error(f"Lỗi không mong muốn trong quá trình xử lý tài liệu: {e}")
-        elif uploaded_files and st.session_state.mdqna_vector_store:
-            st.info(f"Đã có cơ sở tri thức cho {len(st.session_state.mdqna_processed_files)} tài liệu. Sẵn sàng để hỏi đáp hoặc tìm kiếm.")
-
-
-    # --- 2. Đặt Câu hỏi / Tìm kiếm ---
-    if st.session_state.mdqna_vector_store:
-        st.markdown("---")
+    with col_files:
         with st.container(border=True):
-            st.subheader("💬 Bước 2: Đặt Câu hỏi hoặc Tìm kiếm Thông tin")
-            query = st.text_input(
-                "Nhập câu hỏi hoặc từ khóa tìm kiếm của bạn:",
-                key="mdqna_query_input",
-                placeholder="Ví dụ: Các điều khoản chính của hợp đồng A là gì? Hoặc tìm 'báo cáo tài chính quý 1'"
+            st.markdown("""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 700; font-size: 14px;">1. Kho Tài liệu PDF Nguồn</span>
+                <span class="saas-badge saas-badge-indigo">Multi-PDF</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+            uploaded_files = st.file_uploader(
+                "Tải lên một hoặc nhiều file PDF:",
+                type="pdf",
+                accept_multiple_files=True,
+                key="mdqna_file_uploader",
+                help="Chọn nhiều tập tin PDF để tạo chỉ mục vector dùng chung."
             )
 
-            col_search, col_qna = st.columns(2)
-            with col_search:
-                if st.button("🔍 Tìm kiếm Đoạn văn bản Liên quan", use_container_width=True, key="mdqna_search_button", disabled=not query.strip()):
-                    with st.spinner("Đang tìm kiếm các đoạn văn bản tương đồng..."):
-                        st.session_state.mdqna_llm_answer = "" # Reset câu trả lời LLM cũ
-                        try:
-                            st.session_state.mdqna_retrieved_chunks = search_similar_chunks(
-                                query,
-                                st.session_state.mdqna_vector_store,
-                                top_k=5 # Số lượng chunks trả về
-                            )
-                            if not st.session_state.mdqna_retrieved_chunks:
-                                st.warning("Không tìm thấy đoạn văn bản nào phù hợp với truy vấn của bạn.")
-                        except Exception as e_search:
-                            st.error(f"Lỗi khi tìm kiếm: {e_search}")
-                            st.session_state.mdqna_retrieved_chunks = []
-            
-            with col_qna:
-                if st.button("💡 Hỏi AI (Dùng LLM để Trả lời)", type="primary", use_container_width=True, key="mdqna_qna_button", disabled=not query.strip() or not api_key):
-                    if not api_key:
-                        st.error("API Key chưa được cấu hình. Không thể sử dụng LLM để trả lời.")
-                    else:
-                        with st.spinner("AI đang suy nghĩ để trả lời câu hỏi của bạn..."):
-                            st.session_state.mdqna_retrieved_chunks = [] # Reset chunks hiển thị nếu dùng Q&A
-                            # Lấy context từ vector store trước
-                            context_chunks_for_llm = search_similar_chunks(query, st.session_state.mdqna_vector_store, top_k=3) # Lấy ít chunk hơn cho LLM context
-                            if not context_chunks_for_llm:
-                                st.warning("Không tìm thấy ngữ cảnh phù hợp để AI trả lời.")
-                                st.session_state.mdqna_llm_answer = "Không có đủ thông tin trong tài liệu để trả lời câu hỏi này."
-                            else:
-                                try:
-                                    st.session_state.mdqna_llm_answer = asyncio.run(
-                                        get_answer_from_llm_with_context(api_key, query, context_chunks_for_llm)
-                                    )
-                                except ValueError as ve: # Lỗi từ logic
-                                    st.error(f"Lỗi khi tạo câu trả lời: {ve}")
-                                except Exception as e_llm_ans:
-                                    st.error(f"Lỗi không mong muốn khi AI trả lời: {e_llm_ans}")
-                                    st.session_state.mdqna_llm_answer = "Đã có lỗi xảy ra trong quá trình AI tạo câu trả lời."
+            new_files_to_process = []
+            if uploaded_files:
+                current_file_names = {f.name for f in uploaded_files}
+                if not st.session_state.mdqna_processed_files.issuperset(current_file_names) or not st.session_state.mdqna_vector_store:
+                    new_files_to_process = uploaded_files
 
-        # --- 3. Hiển thị Kết quả ---
-        if st.session_state.mdqna_retrieved_chunks or st.session_state.mdqna_llm_answer:
-            st.markdown("---")
+                # Danh sách file đã chọn
+                st.markdown("**Danh sách tài liệu đã nạp:**")
+                for f in uploaded_files:
+                    is_indexed = f.name in st.session_state.mdqna_processed_files
+                    badge_status = '<span class="saas-badge saas-badge-success">Đã index</span>' if is_indexed else '<span class="saas-badge saas-badge-warning">Chờ index</span>'
+                    st.markdown(f"""
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.02); border: 1px solid #E2E8F0; border-radius: 6px; margin-bottom: 4px; font-size: 13px;">
+                        <span>📄 <b>{f.name}</b> ({len(f.getvalue())/1024:.1f} KB)</span>
+                        {badge_status}
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                if new_files_to_process:
+                    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                    if st.button("⚡ Xây dựng Chỉ mục Vector (FAISS)", type="primary", use_container_width=True, key="mdqna_process_button"):
+                        with st.status("Đang xây dựng cơ sở tri thức vector...", expanded=True) as status:
+                            try:
+                                status.write("1/4 Trích xuất nội dung văn bản từ các tệp PDF...")
+                                docs_data = extract_text_from_uploaded_files(new_files_to_process, poppler_path_env)
+                                if not docs_data:
+                                    st.warning("Không có nội dung văn bản hợp lệ để xử lý.")
+                                    return
+
+                                status.write("2/4 Phân rã văn bản thành các đoạn (Text Chunking)...")
+                                text_chunks_with_metadata = get_text_chunks(docs_data)
+                                if not text_chunks_with_metadata:
+                                    st.warning("Không thể phân rã thành các chunk.")
+                                    return
+
+                                st.session_state.mdqna_total_chunks = len(text_chunks_with_metadata)
+
+                                status.write("3/4 Nạp mô hình Embedding Sentence-Transformers...")
+                                if st.session_state.mdqna_embedding_model is None:
+                                    st.session_state.mdqna_embedding_model = get_embedding_model(
+                                        model_name="sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+                                    )
+
+                                status.write(f"4/4 Tính toán vector và lưu vào FAISS Index ({len(text_chunks_with_metadata)} chunks)...")
+                                st.session_state.mdqna_vector_store = create_vector_store_from_chunks(
+                                    text_chunks_with_metadata,
+                                    st.session_state.mdqna_embedding_model
+                                )
+
+                                if st.session_state.mdqna_vector_store:
+                                    st.session_state.mdqna_processed_files.update(current_file_names)
+                                    status.update(label=f"✓ Đã index thành công {len(new_files_to_process)} tài liệu!", state="complete", expanded=False)
+                                    st.rerun()
+                                else:
+                                    st.error("Không thể khởi tạo FAISS vector store.")
+                            except Exception as e:
+                                st.error(f"Lỗi xây dựng index: {e}")
+            else:
+                st.caption("Hãy tải lên ít nhất một file PDF để bắt đầu xây dựng cơ sở tri thức.")
+
+        # Thống kê Vector Store
+        if st.session_state.mdqna_vector_store:
             with st.container(border=True):
-                st.subheader("📝 Kết quả:")
+                st.markdown("""
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 700; font-size: 14px;">📊 Trạng thái Cơ sở Tri thức</span>
+                    <span class="saas-badge saas-badge-success">Ready</span>
+                </div>
+                """, unsafe_allow_html=True)
+                m1, m2 = st.columns(2)
+                with m1:
+                    st.metric("Tài liệu đã nạp", len(st.session_state.mdqna_processed_files))
+                with m2:
+                    st.metric("Vector Chunks", st.session_state.mdqna_total_chunks or "Ready")
+
+    with col_chat:
+        with st.container(border=True):
+            st.markdown("""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 700; font-size: 14px;">2. Truy vấn Ngữ nghĩa & Hỏi đáp RAG</span>
+                <span class="saas-badge saas-badge-indigo">Interactive</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if not st.session_state.mdqna_vector_store:
+                st.markdown("""
+                <div style="background: rgba(79, 70, 229, 0.03); border: 1px dashed #CBD5E1; border-radius: 10px; padding: 2.5rem 1.5rem; text-align: center;">
+                    <div style="font-size: 28px; margin-bottom: 8px;">💬</div>
+                    <div style="font-weight: 600; color: #0F172A; font-size: 14px;">Chờ xây dựng cơ sở tri thức</div>
+                    <div style="color: #64748B; font-size: 12.5px; max-width: 380px; margin: 4px auto 0 auto;">
+                        Sau khi nạp PDF và tạo index vector ở cột bên trái, bạn có thể đặt câu hỏi hoặc tra cứu văn bản theo ngữ nghĩa tại đây.
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                return
+
+            query = st.text_input(
+                "Nhập câu hỏi hoặc nội dung cần tra cứu:",
+                key="mdqna_query_input",
+                placeholder="Ví dụ: Nghĩa vụ của bên A trong hợp đồng là gì? Số tiền thanh toán đợt 1 bao nhiêu?"
+            )
+
+            btn_c1, btn_c2 = st.columns(2)
+            with btn_c1:
+                run_search = st.button("🔍 Tìm Đoạn liên quan (FAISS)", use_container_width=True, disabled=not query.strip())
+            with btn_c2:
+                run_rag = st.button("🤖 Hỏi Đáp Bằng AI (RAG)", type="primary", use_container_width=True, disabled=not query.strip() or not api_key)
+
+            if run_search:
+                with st.spinner("Đang truy vấn các đoạn văn bản tương đồng cao nhất..."):
+                    st.session_state.mdqna_llm_answer = ""
+                    try:
+                        st.session_state.mdqna_retrieved_chunks = search_similar_chunks(
+                            query, st.session_state.mdqna_vector_store, top_k=5
+                        )
+                        if not st.session_state.mdqna_retrieved_chunks:
+                            st.warning("Không tìm thấy đoạn văn bản phù hợp.")
+                    except Exception as e:
+                        st.error(f"Lỗi tìm kiếm: {e}")
+
+            if run_rag:
+                if not api_key:
+                    st.error("Chưa cấu hình API Key trong file .env!")
+                else:
+                    with st.spinner("Đang tìm ngữ cảnh và sinh câu trả lời..."):
+                        st.session_state.mdqna_retrieved_chunks = []
+                        context_chunks = search_similar_chunks(query, st.session_state.mdqna_vector_store, top_k=3)
+                        if not context_chunks:
+                            st.session_state.mdqna_llm_answer = "Không tìm thấy thông tin phù hợp trong các tài liệu đã nạp."
+                        else:
+                            try:
+                                ans = asyncio.run(get_answer_from_llm_with_context(api_key, query, context_chunks))
+                                st.session_state.mdqna_llm_answer = ans
+                                st.session_state.mdqna_retrieved_chunks = context_chunks
+                            except Exception as e:
+                                st.error(f"Lỗi AI trả lời: {e}")
+
+        # Hiển thị Kết quả Phản hồi
+        if st.session_state.mdqna_llm_answer or st.session_state.mdqna_retrieved_chunks:
+            with st.container(border=True):
+                st.markdown("""
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 700; font-size: 14px;">3. Kết quả Phản hồi & Nguồn trích dẫn</span>
+                    <span class="saas-badge saas-badge-success">Answer & Context</span>
+                </div>
+                """, unsafe_allow_html=True)
+
                 if st.session_state.mdqna_llm_answer:
-                    st.markdown("##### Câu trả lời từ AI:")
-                    st.info(st.session_state.mdqna_llm_answer)
-                    st.markdown("---") # Phân cách nếu có cả chunks
+                    st.markdown(f"""
+                    <div style="background: rgba(79, 70, 229, 0.05); border-left: 3px solid #4F46E5; border-radius: 0 8px 8px 0; padding: 12px 14px; margin-bottom: 12px; font-size: 14px; line-height: 1.6;">
+                        <b>🤖 Câu trả lời từ AI:</b><br/>
+                        {st.session_state.mdqna_llm_answer}
+                    </div>
+                    """, unsafe_allow_html=True)
 
                 if st.session_state.mdqna_retrieved_chunks:
-                    st.markdown("##### Các đoạn văn bản liên quan nhất được tìm thấy:")
-                    for i, chunk_info in enumerate(st.session_state.mdqna_retrieved_chunks):
-                        with st.expander(f"Đoạn {i+1} (Từ: {chunk_info['metadata']['source']}, Độ tương đồng: {chunk_info['score']:.4f})", expanded= i < 2 ): # Mở 2อันดับแรก
-                            st.markdown(chunk_info["text"])
-            st.markdown("---")
-            display_random_meme()
+                    st.markdown("**Các đoạn trích dẫn nguồn liên quan nhất:**")
+                    for i, chunk in enumerate(st.session_state.mdqna_retrieved_chunks):
+                        src_name = chunk.get("metadata", {}).get("source", "PDF Document")
+                        score = chunk.get("score", 0.0)
+                        with st.expander(f"Trích dẫn #{i+1} — Nguồn: {src_name} (Độ khớp: {score:.3f})", expanded=(i == 0)):
+                            st.markdown(chunk["text"])
 
-    elif uploaded_files and not st.session_state.mdqna_vector_store:
-        st.warning("Vui lòng nhấn nút 'Xây dựng Cơ sở Tri thức từ Tài liệu' trước khi đặt câu hỏi hoặc tìm kiếm.")
-    
-    elif not uploaded_files:
-         st.info("Vui lòng tải lên ít nhất một file PDF để bắt đầu.")
+            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            display_random_meme()

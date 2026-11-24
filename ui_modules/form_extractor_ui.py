@@ -1,234 +1,7 @@
-# # ui_modules/form_extractor_ui.py
-# import streamlit as st
-# from PIL import Image
-# import asyncio
-
-# from logic.common_processing import extract_text_from_image_pil # Sử dụng hàm đã cải tiến
-# from logic.form_extractor_logic import parse_text_with_groq_form
-# from ui_utils.fun_meme import display_random_meme
-
-# def show_form_extractor_ui(api_key):
-#     st.markdown("<h1 style='text-align: center;'>📄 Trích xuất Thông tin từ Form (Ảnh)</h1>", unsafe_allow_html=True)
-#     st.markdown("<p style='text-align: center;'>Tải lên ảnh CMND/CCCD, Hóa đơn, hoặc Đơn xin việc để tự động trích xuất thông tin chi tiết.</p>", unsafe_allow_html=True)
-#     st.markdown("---")
-
-#     if 'fe_ocr_text' not in st.session_state: st.session_state.fe_ocr_text = ""
-#     if 'fe_ai_result' not in st.session_state: st.session_state.fe_ai_result = None
-#     if 'fe_last_filename' not in st.session_state: st.session_state.fe_last_filename = None
-
-#     uploaded_image_file = st.file_uploader(
-#         "📤 Tải ảnh lên (JPG, PNG, JPEG)",
-#         type=["jpg", "jpeg", "png"],
-#         key="fe_image_uploader",
-#         help="Hệ thống sẽ thực hiện OCR và sau đó dùng AI để trích xuất thông tin."
-#     )
-
-#     if uploaded_image_file:
-#         if uploaded_image_file.name != st.session_state.fe_last_filename:
-#             st.session_state.fe_ocr_text = ""
-#             st.session_state.fe_ai_result = None
-#             st.session_state.fe_last_filename = uploaded_image_file.name
-
-#         col1_img, col2_ocr = st.columns([1, 2])
-
-#         with col1_img:
-#             with st.container(border=True):
-#                 st.subheader("🖼️ Ảnh đã tải lên:")
-#                 image = Image.open(uploaded_image_file)
-#                 st.image(image,use_container_width =True)
-
-#         with col2_ocr:
-#             with st.container(border=True):
-#                 st.subheader("📜 Văn bản OCR từ ảnh:")
-#                 if not st.session_state.fe_ocr_text: # Chỉ OCR nếu chưa có
-#                     with st.spinner("🧠 Đang chạy OCR trên ảnh..."):
-#                         try:
-#                             # Sử dụng hàm đã cải tiến, có thể bật preprocess nếu cần
-#                             st.session_state.fe_ocr_text = extract_text_from_image_pil(image, lang="vie", preprocess=True) # Thử preprocess
-#                         except ValueError as ve:
-#                             st.error(f"Lỗi OCR: {ve}")
-#                             st.session_state.fe_ocr_text = ""
-#                         except Exception as e_ocr:
-#                             st.error(f"Lỗi OCR không xác định: {e_ocr}")
-#                             st.session_state.fe_ocr_text = ""
-                
-#                 st.text_area("Kết quả OCR:", st.session_state.fe_ocr_text, height=300, key="fe_ocr_display_area",
-#                              help="Đây là văn bản được trích xuất từ ảnh bằng công nghệ OCR.")
-        
-#         st.markdown("---")
-#         if st.session_state.fe_ocr_text.strip():
-#             if st.button("🚀 Trích xuất Thông tin bằng AI", key="fe_extract_ai_button", type="primary", use_container_width=True):
-#                 if not api_key:
-#                     st.error("API Key chưa được cấu hình. Không thể trích xuất thông tin bằng AI.")
-#                 else:
-#                     with st.spinner("🤖 AI đang phân tích văn bản OCR và trích xuất thông tin..."):
-#                         try:
-#                             st.session_state.fe_ai_result = asyncio.run(parse_text_with_groq_form(api_key, st.session_state.fe_ocr_text))
-#                         except ValueError as ve: # Lỗi từ logic AI
-#                             st.error(f"Lỗi AI: {ve}")
-#                             st.session_state.fe_ai_result = {"error": str(ve)}
-#                         except Exception as e_ai_form:
-#                             st.error(f"Lỗi không mong muốn khi AI trích xuất form: {e_ai_form}")
-#                             st.session_state.fe_ai_result = {"error": str(e_ai_form)}
-        
-#         if st.session_state.fe_ai_result:
-#             with st.container(border=True):
-#                 st.subheader("📊 Kết quả Trích xuất Thông tin từ AI:")
-#                 if "error" in st.session_state.fe_ai_result:
-#                     st.error(f"Lỗi: {st.session_state.fe_ai_result['error']}")
-#                     if "raw_response" in st.session_state.fe_ai_result:
-#                         with st.expander("Xem phản hồi gốc từ AI"):
-#                             st.text(st.session_state.fe_ai_result["raw_response"])
-#                 else:
-#                     st.json(st.session_state.fe_ai_result)
-#                     # Nút tải JSON
-#                     import json
-#                     json_string = json.dumps(st.session_state.fe_ai_result, ensure_ascii=False, indent=4)
-#                     st.download_button(
-#                         label="📥 Tải kết quả JSON",
-#                         data=json_string,
-#                         file_name=f"form_extraction_{uploaded_image_file.name.split('.')[0]}.json",
-#                         mime="application/json",
-#                         key="fe_download_json_button"
-#                     )
-#             st.markdown("---")
-#             display_random_meme()
-
-#     else:
-#         st.info("Vui lòng tải lên một file ảnh (JPG, PNG) để bắt đầu trích xuất thông tin từ form.")
-
 # ui_modules/form_extractor_ui.py
-# import streamlit as st
-# from PIL import Image
-# import asyncio
-# import pandas as pd # Cần thêm pandas để vẽ biểu đồ
-
-# # Import các logic cũ
-# from logic.common_processing import extract_text_from_image_pil
-# from logic.form_extractor_logic import parse_text_with_groq_form
-# # Import logic mới
-# from logic.local_model_logic import predict_image_type 
-# from ui_utils.fun_meme import display_random_meme
-
-# def show_form_extractor_ui(api_key):
-#     st.markdown("<h1 style='text-align: center;'>📄 Phân loại & Trích xuất Giấy tờ</h1>", unsafe_allow_html=True)
-#     st.markdown("<p style='text-align: center;'>Sử dụng mô hình <b>AI Local</b> để phân loại nhanh và <b>GenAI (API)</b> để trích xuất chi tiết.</p>", unsafe_allow_html=True)
-#     st.markdown("---")
-
-#     # Khởi tạo session state
-#     if 'fe_ocr_text' not in st.session_state: st.session_state.fe_ocr_text = ""
-#     if 'fe_ai_result' not in st.session_state: st.session_state.fe_ai_result = None
-#     if 'fe_local_pred' not in st.session_state: st.session_state.fe_local_pred = None # Lưu kết quả model local
-#     if 'fe_last_filename' not in st.session_state: st.session_state.fe_last_filename = None
-
-#     uploaded_image_file = st.file_uploader(
-#         "📤 Tải ảnh lên (JPG, PNG)",
-#         type=["jpg", "jpeg", "png"],
-#         key="fe_image_uploader"
-#     )
-
-#     if uploaded_image_file:
-#         # Reset state nếu file thay đổi
-#         if uploaded_image_file.name != st.session_state.fe_last_filename:
-#             st.session_state.fe_ocr_text = ""
-#             st.session_state.fe_ai_result = None
-#             st.session_state.fe_local_pred = None
-#             st.session_state.fe_last_filename = uploaded_image_file.name
-
-#         image = Image.open(uploaded_image_file)
-        
-#         # --- PHẦN 1: CHẠY MODEL LOCAL (TỰ ĐỘNG) ---
-#         col_img, col_info = st.columns([1, 1.5])
-        
-#         with col_img:
-#             st.image(image, caption="Ảnh gốc", use_container_width=True)
-
-#         with col_info:
-#             st.subheader("🔍 Kết quả Phân loại (Local Model)")
-            
-#             # Nếu chưa có kết quả dự đoán thì chạy ngay lập tức
-#             if st.session_state.fe_local_pred is None:
-#                 with st.spinner("⚡ Đang chạy model phân loại cục bộ..."):
-#                     st.session_state.fe_local_pred = predict_image_type(image)
-            
-#             # Hiển thị kết quả local
-#             pred_result = st.session_state.fe_local_pred
-            
-#             if "error" in pred_result:
-#                 st.error(f"Lỗi Model Local: {pred_result['error']}")
-#             else:
-#                 # Hiển thị Label to
-#                 label = pred_result['label']
-#                 conf = pred_result['confidence']
-                
-#                 # Tô màu dựa trên độ tự tin
-#                 color = "green" if conf > 80 else "orange" if conf > 50 else "red"
-#                 st.markdown(f"### Dự đoán: <span style='color:{color}'>{label}</span>", unsafe_allow_html=True)
-#                 st.markdown(f"**Độ tin cậy:** {conf:.2f}%")
-                
-#                 # Vẽ biểu đồ cột xác suất các lớp
-#                 st.write("Chi tiết xác suất:")
-#                 chart_data = pd.DataFrame(
-#                     list(pred_result['details'].items()),
-#                     columns=["Loại giấy tờ", "Xác suất (%)"]
-#                 )
-#                 st.bar_chart(chart_data, x="Loại giấy tờ", y="Xác suất (%)")
-
-#         st.markdown("---")
-
-#         # --- PHẦN 2: CHẠY OCR & API (THỦ CÔNG) ---
-#         st.subheader("🤖 Trích xuất chi tiết (API Cloud)")
-#         st.info("Nếu kết quả phân loại trên đã đúng (hoặc bạn muốn xem chi tiết), hãy bấm nút dưới đây để OCR và gọi AI trích xuất dữ liệu.")
-
-#         col_ocr, col_json = st.columns(2)
-
-#         # Nút bấm để kích hoạt quy trình API
-#         if st.button("🚀 Chạy OCR & Trích xuất (Call API)", type="primary", use_container_width=True):
-#             if not api_key:
-#                 st.error("⚠️ Chưa nhập API Key!")
-#             else:
-#                 # 1. Chạy OCR
-#                 with st.status("Đang xử lý...", expanded=True) as status:
-#                     st.write("👀 Đang đọc văn bản (OCR)...")
-#                     try:
-#                         st.session_state.fe_ocr_text = extract_text_from_image_pil(image, lang="vie", preprocess=True)
-#                     except Exception as e:
-#                         st.error(f"Lỗi OCR: {e}")
-#                         st.stop()
-                    
-#                     st.write("🧠 Đang gửi cho AI phân tích...")
-#                     try:
-#                         st.session_state.fe_ai_result = asyncio.run(parse_text_with_groq_form(api_key, st.session_state.fe_ocr_text))
-#                     except Exception as e:
-#                         st.error(f"Lỗi API: {e}")
-#                         st.stop()
-                        
-#                     status.update(label="Hoàn tất!", state="complete", expanded=False)
-
-#         # Hiển thị kết quả sau khi bấm nút
-#         with col_ocr:
-#             if st.session_state.fe_ocr_text:
-#                 st.text_area("Văn bản OCR:", st.session_state.fe_ocr_text, height=300)
-
-#         with col_json:
-#             if st.session_state.fe_ai_result:
-#                 st.success("Kết quả từ AI:")
-#                 st.json(st.session_state.fe_ai_result)
-                
-#                 # So sánh nhẹ kết quả
-#                 ai_type = st.session_state.fe_ai_result.get("loai_giay_to", "Không rõ")
-#                 local_type = st.session_state.fe_local_pred['label'] if st.session_state.fe_local_pred else "N/A"
-                
-#                 st.caption(f"ℹ️ So sánh: Model Local đoán là **{local_type}** | API trích xuất là **{ai_type}**")
-
-#     else:
-#         st.info("Vui lòng tải lên một file ảnh để bắt đầu.")
-
-# ui_modules/form_extractor_ui.py
-
 import asyncio
 import json
-
+import os
 import pandas as pd
 import streamlit as st
 from PIL import Image
@@ -237,10 +10,15 @@ from logic.common_processing import extract_text_from_image_pil
 from logic.form_extractor_logic import parse_text_with_groq_form
 from logic.local_model_logic import predict_image_type, clear_local_model_cache
 from ui_utils.fun_meme import display_random_meme
-
+from ui_utils.ui_components import (
+    get_runtime_system_status,
+    render_page_header,
+    render_pipeline_stepper,
+    render_empty_state,
+)
 
 # =========================================================
-# HELPER FUNCTIONS
+# HELPER FUNCTIONS & STATE
 # =========================================================
 
 def init_form_extractor_state():
@@ -250,13 +28,11 @@ def init_form_extractor_state():
         "fe_local_pred": None,
         "fe_last_filename": None,
         "fe_manual_label": None,
-        "fe_uploaded_image": None,
+        "fe_preprocess_ocr": True,
     }
-
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
-
 
 def reset_form_extractor_state(filename=None):
     st.session_state.fe_ocr_text = ""
@@ -264,64 +40,6 @@ def reset_form_extractor_state(filename=None):
     st.session_state.fe_local_pred = None
     st.session_state.fe_manual_label = None
     st.session_state.fe_last_filename = filename
-
-
-def get_confidence_status(confidence):
-    if confidence >= 85:
-        return "high", "Độ tin cậy cao", "success"
-    if confidence >= 60:
-        return "medium", "Độ tin cậy trung bình, nên kiểm tra thêm bằng OCR/AI", "warning"
-    return "low", "Độ tin cậy thấp, ảnh có thể mờ hoặc không thuộc nhóm đã train", "error"
-
-
-def display_local_prediction(pred_result):
-    st.subheader("1. Phân loại ảnh bằng EfficientNetV2B0")
-
-    if not pred_result:
-        st.info("Chưa có kết quả phân loại.")
-        return
-
-    if "error" in pred_result:
-        st.error(f"Lỗi model local: {pred_result['error']}")
-        return
-
-    label = pred_result["display_label"]
-    raw_label = pred_result["label"]
-    confidence = pred_result["confidence"]
-    _, status_text, status_type = get_confidence_status(confidence)
-
-    col_a, col_b = st.columns([2, 1])
-
-    with col_a:
-        if status_type == "success":
-            st.success(f"Loại tài liệu dự đoán: **{label}**")
-        elif status_type == "warning":
-            st.warning(f"Loại tài liệu dự đoán: **{label}**")
-        else:
-            st.error(f"Loại tài liệu dự đoán: **{label}**")
-
-        st.caption(status_text)
-        st.caption("Model: EfficientNetV2B0 fine-tune, chạy local/offline.")
-
-    with col_b:
-        st.metric("Độ tin cậy", f"{confidence:.2f}%")
-
-    details = pred_result.get("details", {})
-    if details:
-        chart_data = pd.DataFrame(
-            list(details.items()),
-            columns=["Loại tài liệu", "Xác suất (%)"]
-        )
-        st.bar_chart(chart_data, x="Loại tài liệu", y="Xác suất (%)")
-
-    st.session_state.fe_manual_label = st.selectbox(
-        "Có thể sửa nhãn nếu model dự đoán chưa đúng:",
-        options=list(details.keys()) if details else [raw_label],
-        index=list(details.keys()).index(raw_label) if details and raw_label in details else 0,
-        format_func=lambda x: x.replace("_", " "),
-        key="fe_manual_label_select"
-    )
-
 
 def build_ai_context_prompt(ocr_text, local_pred, manual_label):
     local_label = "Không xác định"
@@ -334,272 +52,313 @@ def build_ai_context_prompt(ocr_text, local_pred, manual_label):
     final_label = manual_label.replace("_", " ") if manual_label else local_label
 
     prompt = f"""
-THÔNG TIN PHÂN LOẠI ẢNH LOCAL:
-- Model ảnh: EfficientNetV2B0 fine-tune
-- Nhãn model dự đoán: {local_label}
+THÔNG TIN PHÂN LOẠI ẢNH CỤC BỘ:
+- Mô hình: EfficientNetV2B0 fine-tuned
+- Phân loại dự đoán: {local_label}
 - Độ tin cậy: {local_conf:.2f}%
-- Nhãn người dùng xác nhận/chỉnh sửa: {final_label}
+- Nhãn xác nhận: {final_label}
 
-NỘI DUNG OCR:
+NỘI DUNG VĂN BẢN TỪ OCR:
 {ocr_text}
 
 YÊU CẦU:
-Hãy trích xuất thông tin quan trọng từ tài liệu trên.
-Ưu tiên cấu trúc JSON nếu có thể.
-Nếu là hóa đơn, trích xuất:
-- loại giấy tờ
-- tên bên bán
-- tên bên mua
-- mã số thuế
-- số hóa đơn
-- ngày lập
-- tổng tiền
-- thuế GTGT
-- hàng hóa/dịch vụ chính
+Hãy trích xuất thông tin quan trọng từ tài liệu trên và trả về định dạng JSON thuần túy (không markdown bọc ngoài).
+Nếu là Hóa đơn:
+- loai_giay_to: "Hóa đơn"
+- ten_ben_ban
+- ten_ben_mua
+- ma_so_thue
+- so_hoa_don
+- ngay_lap
+- tong_tien
+- thue_gtgt
+- danh_sach_hang_hoa (danh sách các đối tượng gồm ten_hang, so_luong, don_gia, thanh_tien)
 
-Nếu là sơ yếu lý lịch, trích xuất:
-- loại giấy tờ
-- họ tên
-- ngày sinh
-- quê quán
-- địa chỉ
-- số CCCD/CMND nếu có
-- trình độ học vấn nếu có
-- kinh nghiệm hoặc thông tin cá nhân chính
+Nếu là Sơ yếu lý lịch:
+- loai_giay_to: "Sơ yếu lý lịch"
+- ho_ten
+- ngay_sinh
+- que_quan
+- dia_chi_thuong_tru
+- so_cccd_cmnd
+- trinh_do_hoc_van
+- kinh_nghiem_chinh
 
-Nếu không đủ thông tin, hãy ghi null hoặc "không tìm thấy".
+Nếu là tài liệu khác:
+- loai_giay_to
+- cac_truong_thong_tin_chinh
 """
     return prompt
 
-
-def display_ai_result(uploaded_filename):
-    if not st.session_state.fe_ai_result:
-        return
-
-    st.subheader("3. Kết quả trích xuất bằng LLM")
-
-    result = st.session_state.fe_ai_result
-
-    if isinstance(result, dict) and "error" in result:
-        st.error(f"Lỗi: {result['error']}")
-
-        if "raw_response" in result:
-            with st.expander("Xem phản hồi gốc"):
-                st.text(result["raw_response"])
-
-        return
-
-    st.success("Đã trích xuất thông tin thành công.")
-
-    tab_json, tab_text = st.tabs(["JSON/Kết quả", "Văn bản OCR"])
-
-    with tab_json:
-        if isinstance(result, dict):
-            st.json(result)
-            json_string = json.dumps(result, ensure_ascii=False, indent=4)
-        else:
-            st.write(result)
-            json_string = json.dumps(
-                {"result": result},
-                ensure_ascii=False,
-                indent=4
-            )
-
-        safe_name = uploaded_filename.rsplit(".", 1)[0] if uploaded_filename else "document"
-        st.download_button(
-            label="Tải kết quả JSON",
-            data=json_string,
-            file_name=f"extraction_result_{safe_name}.json",
-            mime="application/json",
-            use_container_width=True
-        )
-
-    with tab_text:
-        st.text_area(
-            "Văn bản OCR:",
-            st.session_state.fe_ocr_text,
-            height=350
-        )
-
-
 # =========================================================
-# MAIN UI
+# MAIN DOCUMENT EXTRACTION UI (HIGHEST PRIORITY)
 # =========================================================
 
 def show_form_extractor_ui(api_key):
     init_form_extractor_state()
+    sys_status = get_runtime_system_status()
 
-    st.markdown(
-        "<h1 style='text-align: center;'>Phân loại ảnh & Trích xuất thông tin tài liệu</h1>",
-        unsafe_allow_html=True
+    # A. Page Header (Mục 6.A)
+    badges = [
+        {"text": "● EfficientNetV2B0 Ready" if sys_status["efficientnet"] else "○ Model Missing", "type": "success" if sys_status["efficientnet"] else "warning"},
+        {"text": "● OCR Online" if sys_status["ocr"] else "○ OCR Offline", "type": "success" if sys_status["ocr"] else "error"},
+        {"text": "● LLM Configured" if sys_status["llm"] else "○ LLM Missing", "type": "indigo" if sys_status["llm"] else "error"},
+    ]
+    render_page_header(
+        title="Document Extraction",
+        description="Extract structured information from forms and documents using AI-powered classification, OCR and LLM.",
+        breadcrumb="AI DOCUMENT / FORM EXTRACTION",
+        badges=badges
     )
 
-    st.markdown(
-        """
-        <p style='text-align: center;'>
-        Luồng xử lý: <b>Ảnh tài liệu</b> → <b>EfficientNetV2B0 phân loại local</b> → 
-        <b>OCR</b> → <b>LLM trích xuất chi tiết</b>
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+    # B. Processing Pipeline Stepper (Mục 6.B)
+    current_step = 1
+    if st.session_state.fe_local_pred is not None:
+        current_step = 2
+    if st.session_state.fe_ai_result is not None:
+        current_step = 3
 
-    st.markdown("---")
+    steps = [
+        ("Step 1: Upload Document", 1),
+        ("Step 2: Classification & OCR", 2),
+        ("Step 3: Structured JSON Extraction", 3)
+    ]
+    render_pipeline_stepper(steps, current_step)
 
-    with st.expander("Cấu hình model local", expanded=False):
-        st.write("Model ảnh đang dùng:")
-        st.code("models/model_AI_documen/best_document_image_classifier_2classes.keras")
-        st.write("Class names:")
-        st.code("models/model_AI_documen/class_names.txt")
+    # D. Model Configuration (Mục 6.D)
+    with st.expander("⚙️ EfficientNetV2B0 Model Configuration", expanded=False):
+        c_cfg1, c_cfg2 = st.columns([3, 1])
+        with c_cfg1:
+            st.markdown("**Architecture:** `EfficientNetV2B0 Fine-tuned (Local Inference)`")
+            st.markdown("**Checkpoint:** `models/model_AI_documen/best_document_image_classifier_2classes.keras`")
+            st.markdown("**Classes:** `Hóa đơn (Invoice)`, `Sơ yếu lý lịch (Resume)`")
+        with c_cfg2:
+            if st.button("Reload Model Cache", key="fe_btn_reload_cache", use_container_width=True):
+                clear_local_model_cache()
+                st.session_state.fe_local_pred = None
+                st.success("Cache cleared successfully.")
+                st.rerun()
 
-        if st.button("Reload model local", use_container_width=True):
-            clear_local_model_cache()
-            st.session_state.fe_local_pred = None
-            st.success("Đã xóa cache model. Hãy chạy lại phân loại.")
-
+    # C. Upload Section (Mục 6.C)
     uploaded_image_file = st.file_uploader(
-        "Tải ảnh tài liệu lên",
+        "Kéo thả hoặc duyệt ảnh tài liệu:",
         type=["jpg", "jpeg", "png"],
         key="fe_image_uploader",
-        help="Hỗ trợ ảnh hóa đơn hoặc sơ yếu lý lịch. Ảnh PNG/RGBA sẽ được tự chuyển về RGB."
+        help="Hỗ trợ các định dạng hình ảnh: JPG, PNG, JPEG. Kích thước khuyến nghị dưới 20MB."
     )
 
+    # E. Empty State (Mục 6.E)
     if not uploaded_image_file:
-        st.info("Vui lòng tải lên một ảnh JPG/PNG để bắt đầu.")
+        render_empty_state(
+            icon="📄",
+            title="No documents selected",
+            description="Hãy tải lên một tệp ảnh tài liệu (Hóa đơn, Sơ yếu lý lịch, CCCD) để hệ thống tự động nhận diện và trích xuất cấu trúc dữ liệu."
+        )
         return
 
+    # Quản lý đổi file
     if uploaded_image_file.name != st.session_state.fe_last_filename:
         reset_form_extractor_state(uploaded_image_file.name)
 
     try:
         image = Image.open(uploaded_image_file)
+        preview_image = image.convert("RGB")
     except Exception as e:
-        st.error(f"Không thể đọc ảnh: {e}")
+        st.error(f"Lỗi không thể mở file ảnh: {e}")
         return
 
-    # Convert để preview/predict ổn định
-    preview_image = image.convert("RGB")
+    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-    col_img, col_pred = st.columns([1, 1.5])
+    # =========================================================
+    # G. EXTRACTION RESULTS & WORKBENCH (Mục 6.G: TWO-COLUMN LAYOUT)
+    # =========================================================
+    col_preview, col_workbench = st.columns([1, 1.25], gap="large")
 
-    with col_img:
+    # LEFT COLUMN: Document Preview & Info (Mục 6.G - Left column)
+    with col_preview:
         with st.container(border=True):
-            st.subheader("Ảnh đầu vào")
-            st.image(preview_image, caption=uploaded_image_file.name, use_container_width=True)
-            st.caption(f"Kích thước: {image.size[0]} x {image.size[1]} | Mode gốc: {image.mode}")
+            st.markdown(f"""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 700; font-size: 14px; color: #0F172A;">🖼️ Document Preview</span>
+                <span class="badge-soft-neutral">{uploaded_image_file.name}</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-    with col_pred:
+            st.image(preview_image, use_container_width=True)
+
+            # Metadata info bar
+            file_kb = len(uploaded_image_file.getvalue()) / 1024
+            st.markdown(f"""
+            <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #E2E8F0; font-size: 12px; color: #64748B;">
+                <span>Resolution: <b>{image.size[0]} × {image.size[1]} px</b></span>
+                <span>Mode: <b>{image.mode}</b></span>
+                <span>Size: <b>{file_kb:.1f} KB</b></span>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # RIGHT COLUMN: Extracted info, JSON, actions (Mục 6.G - Right column)
+    with col_workbench:
+        # STEP 1: CLASSIFICATION
         with st.container(border=True):
+            st.markdown("""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-weight: 700; font-size: 14px; color: #0F172A;">1. Classification (EfficientNetV2B0)</span>
+                <span class="badge-soft-indigo">Step 2.1</span>
+            </div>
+            """, unsafe_allow_html=True)
+
             if st.session_state.fe_local_pred is None:
-                if st.button("Chạy phân loại ảnh local", type="primary", use_container_width=True):
-                    with st.spinner("Đang chạy EfficientNetV2B0..."):
+                st.caption("Khởi chạy mô hình mạng nơ-ron tích chập để nhận dạng loại tài liệu.")
+                if st.button("🚀 Run Classification", key="fe_btn_classify", type="primary", use_container_width=True):
+                    with st.status("Analyzing image features with EfficientNetV2B0...", expanded=True) as status:
                         st.session_state.fe_local_pred = predict_image_type(image)
+                        status.update(label="✓ Classification completed!", state="complete", expanded=False)
                     st.rerun()
             else:
-                display_local_prediction(st.session_state.fe_local_pred)
-
-                if st.button("Chạy lại phân loại", use_container_width=True):
-                    st.session_state.fe_local_pred = None
-                    st.rerun()
-
-    st.markdown("---")
-
-    # Chỉ cho OCR sau khi đã có kết quả local
-    if st.session_state.fe_local_pred is None:
-        st.info("Hãy chạy phân loại ảnh local trước, sau đó mới chạy OCR và LLM.")
-        return
-
-    st.subheader("2. OCR và trích xuất chi tiết")
-
-    col_ocr_action, col_ocr_preview = st.columns([1, 1.5])
-
-    with col_ocr_action:
-        with st.container(border=True):
-            st.write("OCR sẽ đọc chữ trong ảnh, sau đó LLM sẽ trích xuất thông tin theo loại tài liệu.")
-
-            preprocess_ocr = st.checkbox(
-                "Bật tiền xử lý ảnh trước OCR",
-                value=True,
-                help="Nên bật nếu ảnh bị mờ, nghiêng nhẹ hoặc chất lượng thấp."
-            )
-
-            run_ocr_only = st.button(
-                "Chạy OCR",
-                use_container_width=True
-            )
-
-            run_full_pipeline = st.button(
-                "Chạy OCR + LLM trích xuất",
-                type="primary",
-                use_container_width=True
-            )
-
-    if run_ocr_only or run_full_pipeline:
-        with st.status("Đang xử lý OCR...", expanded=True) as status:
-            try:
-                st.write("Đang đọc văn bản từ ảnh...")
-                st.session_state.fe_ocr_text = extract_text_from_image_pil(
-                    image,
-                    lang="vie",
-                    preprocess=preprocess_ocr
-                )
-
-                if not st.session_state.fe_ocr_text.strip():
-                    st.warning("OCR không đọc được văn bản rõ ràng từ ảnh.")
+                pred = st.session_state.fe_local_pred
+                if "error" in pred:
+                    st.error(f"Classification Error: {pred['error']}")
                 else:
-                    st.write("OCR hoàn tất.")
+                    conf = pred.get("confidence", 0.0)
+                    disp_label = pred.get("display_label", pred.get("label", "Unknown"))
+                    raw_label = pred.get("label", "")
 
-                status.update(label="OCR hoàn tất", state="complete", expanded=False)
+                    c_m1, c_m2 = st.columns([1.6, 1])
+                    with c_m1:
+                        st.markdown(f"""
+                        <div style="margin-top: 2px;">
+                            <div style="font-size: 11px; text-transform: uppercase; color: #64748B; font-weight: 700; letter-spacing: 0.05em;">Predicted Category</div>
+                            <div style="font-size: 20px; font-weight: 800; color: #4F46E5;">{disp_label}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    with c_m2:
+                        st.metric("Confidence", f"{conf:.1f}%")
 
-            except Exception as e:
-                st.error(f"Lỗi OCR: {e}")
-                st.stop()
+                    st.progress(min(conf / 100.0, 1.0), text=f"Model Confidence: {conf:.1f}%")
 
-    if run_full_pipeline:
-        if not api_key:
-            st.error("Thiếu API Key để gọi LLM.")
-        elif not st.session_state.fe_ocr_text.strip():
-            st.error("Không có văn bản OCR để gửi cho LLM.")
-        else:
-            with st.status("Đang gọi LLM trích xuất thông tin...", expanded=True) as status:
-                try:
-                    final_label = st.session_state.get("fe_manual_label_select")
-
-                    prompt_text = build_ai_context_prompt(
-                        ocr_text=st.session_state.fe_ocr_text,
-                        local_pred=st.session_state.fe_local_pred,
-                        manual_label=final_label
+                    details = pred.get("details", {})
+                    st.session_state.fe_manual_label = st.selectbox(
+                        "Confirm or adjust document label:",
+                        options=list(details.keys()) if details else [raw_label],
+                        index=list(details.keys()).index(raw_label) if (details and raw_label in details) else 0,
+                        format_func=lambda x: x.replace("_", " ").title(),
+                        key="fe_manual_label_select"
                     )
 
-                    # Ưu tiên dùng hàm parse cũ để giữ tương thích hệ thống.
-                    # Nếu hàm parse_text_with_groq_form của bạn chỉ nhận text OCR,
-                    # có thể truyền prompt_text để LLM có thêm ngữ cảnh local model.
-                    st.session_state.fe_ai_result = asyncio.run(
-                        parse_text_with_groq_form(api_key, prompt_text)
-                    )
+        # STEP 2: OCR & LLM PIPELINE
+        if st.session_state.fe_local_pred is not None:
+            with st.container(border=True):
+                st.markdown("""
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-weight: 700; font-size: 14px; color: #0F172A;">2. OCR & Structured LLM Extraction</span>
+                    <span class="badge-soft-success">Step 2.2 & 3</span>
+                </div>
+                """, unsafe_allow_html=True)
 
-                    status.update(label="LLM trích xuất hoàn tất", state="complete", expanded=False)
-
-                except Exception as e:
-                    st.error(f"Lỗi LLM/API: {e}")
-                    st.stop()
-
-    with col_ocr_preview:
-        with st.container(border=True):
-            st.subheader("Văn bản OCR")
-
-            if st.session_state.fe_ocr_text:
-                st.text_area(
-                    "Kết quả OCR:",
-                    st.session_state.fe_ocr_text,
-                    height=320
+                st.session_state.fe_preprocess_ocr = st.checkbox(
+                    "Enable Image Preprocessing (Adaptive Contrast & Denoise)",
+                    value=st.session_state.fe_preprocess_ocr
                 )
-            else:
-                st.info("Chưa có kết quả OCR.")
+
+                c_b1, c_b2 = st.columns(2)
+                with c_b1:
+                    run_ocr = st.button("Run OCR Only", key="fe_btn_ocr", use_container_width=True)
+                with c_b2:
+                    run_pipeline = st.button("Extract JSON (Full Pipeline) →", key="fe_btn_full", type="primary", use_container_width=True)
+
+                if run_ocr or run_pipeline:
+                    with st.status("Processing OCR with Tesseract Engine...", expanded=False) as ocr_status:
+                        try:
+                            st.session_state.fe_ocr_text = extract_text_from_image_pil(
+                                image,
+                                lang="vie",
+                                preprocess=st.session_state.fe_preprocess_ocr
+                            )
+                            ocr_status.update(label="✓ Optical Character Recognition completed!", state="complete")
+                        except Exception as e:
+                            st.error(f"OCR Exception: {e}")
+
+                if run_pipeline:
+                    if not api_key:
+                        st.error("LLM API Key missing in environment (.env).")
+                    elif not st.session_state.fe_ocr_text.strip():
+                        st.warning("OCR returned empty text. Cannot extract structured data.")
+                    else:
+                        with st.status("LLM is synthesizing structured JSON...", expanded=True) as llm_status:
+                            try:
+                                final_label = st.session_state.get("fe_manual_label_select")
+                                prompt_text = build_ai_context_prompt(
+                                    ocr_text=st.session_state.fe_ocr_text,
+                                    local_pred=st.session_state.fe_local_pred,
+                                    manual_label=final_label
+                                )
+                                parsed_res = asyncio.run(
+                                    parse_text_with_groq_form(api_key, prompt_text)
+                                )
+                                st.session_state.fe_ai_result = parsed_res
+                                llm_status.update(label="✓ Structured data extraction completed!", state="complete", expanded=False)
+                            except Exception as e:
+                                st.error(f"LLM Extraction Error: {e}")
+                        st.rerun()
+
+        # STEP 3: STRUCTURED OUTPUT & ACTIONS (Mục 6.G)
+        if st.session_state.fe_ai_result or st.session_state.fe_ocr_text:
+            with st.container(border=True):
+                st.markdown("""
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-weight: 700; font-size: 14px; color: #0F172A;">3. Extraction Output</span>
+                    <span class="badge-soft-indigo">Structured Data</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+                tab_table, tab_json, tab_ocr = st.tabs(["📊 Structured Fields", "🧾 JSON Output", "📝 Raw OCR Text"])
+
+                with tab_table:
+                    res = st.session_state.fe_ai_result
+                    if res and isinstance(res, dict):
+                        flat_rows = []
+                        for k, v in res.items():
+                            if not isinstance(v, (dict, list)):
+                                label_k = str(k).replace("_", " ").title()
+                                flat_rows.append({"Field Name": label_k, "Value": str(v)})
+
+                        if flat_rows:
+                            st.dataframe(pd.DataFrame(flat_rows), use_container_width=True, hide_index=True)
+
+                        for list_key in ["danh_sach_hang_hoa", "items", "san_pham"]:
+                            if list_key in res and isinstance(res[list_key], list):
+                                st.markdown(f"**Items Breakdown ({list_key}):**")
+                                st.dataframe(pd.DataFrame(res[list_key]), use_container_width=True)
+                    else:
+                        st.info("Nhấn 'Extract JSON (Full Pipeline)' để trích xuất các trường dữ liệu có cấu trúc.")
+
+                with tab_json:
+                    if res:
+                        st.json(res)
+                        json_str = json.dumps(res, ensure_ascii=False, indent=2)
+
+                        # Copy JSON and Download JSON Actions (Mục 6.G)
+                        col_copy, col_dl = st.columns(2)
+                        with col_copy:
+                            st.text_area("JSON Payload (Ready to copy):", value=json_str, height=120, key="fe_copy_json_area")
+                        with col_dl:
+                            st.download_button(
+                                label="📥 Download JSON",
+                                data=json_str,
+                                file_name=f"extract_{uploaded_image_file.name.rsplit('.', 1)[0]}.json",
+                                mime="application/json",
+                                type="primary",
+                                use_container_width=True
+                            )
+
+                with tab_ocr:
+                    st.text_area(
+                        "Raw OCR Transcription:",
+                        value=st.session_state.fe_ocr_text,
+                        height=240,
+                        help="Dữ liệu thô thu được từ động cơ Tesseract OCR."
+                    )
 
     if st.session_state.fe_ai_result:
-        st.markdown("---")
-        display_ai_result(uploaded_image_file.name)
-
-        st.markdown("---")
+        st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
         display_random_meme()

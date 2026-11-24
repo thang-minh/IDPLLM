@@ -1,6 +1,9 @@
 # logic/multi_doc_qna_logic.py
 import io
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+try:
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+except ImportError:
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from langchain_community.vectorstores import FAISS # Langchain có tích hợp sẵn FAISS
